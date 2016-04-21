@@ -1,1 +1,1 @@
-Hello! This is where I put my recreation of youareanidit.org. I used archive.org.
+This is where I put my random stuff.
