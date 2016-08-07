@@ -1,0 +1,298 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Time_set</title>
+<link href="../../../style_sheet/Title_name.css" rel="stylesheet" type="text/css" />
+<link href="../../../style_sheet/Time_Colon.css" rel="stylesheet" type="text/css" />
+<style type="text/css">
+<!--
+@import url("../../../style_sheet/Under.css");
+body {
+	background-repeat: repeat-x;
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+	background-image: url(../../../COMMON/BG/BG_common.gif);
+}
+a:link {
+	text-decoration: none;
+}
+a:visited {
+	text-decoration: none;
+}
+a:hover {
+	text-decoration: none;
+}
+a:active {
+	text-decoration: none;
+}
+.style1 {
+	color: #FFFFFF;
+	font-size: 24px;
+	line-height: -60px;
+	text-align: right;
+}
+#UnderL {
+	position:absolute;
+	left:28px;
+	top:371px;
+	width:272px;
+	height:72px;
+	z-index:13;
+}
+#UnderR {
+	position:absolute;
+	left:308px;
+	top:371px;
+	width:272px;
+	height:72px;
+	z-index:14;
+}
+#HourUP {
+	position:absolute;
+	left:200px;
+	top:108px;
+	width:64px;
+	height:64px;
+}
+#MinUP {
+	position:absolute;
+	left:336px;
+	top:108px;
+	width:64px;
+	height:64px;
+}
+#HourDW {
+	position:absolute;
+	left:200px;
+	top:253px;
+	width:64px;
+	height:64px;
+}
+#MinDW {
+	position:absolute;
+	left:336px;
+	top:253px;
+	width:64px;
+	height:64px;
+}
+.style4 {
+	font-size: 60px;
+	color: #FFFFFF;
+}
+#BnrDarkGray {
+	position:absolute;
+	left:24px;
+	top:35px;
+	width:32px;
+	height:26px;
+	background-image: url(../../../COMMON/BG/Tab_Middle_gray.gif);
+}
+#BnrGray {
+	position:absolute;
+	left:56px;
+	top:35px;
+	width:32px;
+	height:26px;
+	background-image: url(../../../COMMON/BG/Tab_gray02.gif);
+	background-repeat: no-repeat;
+}
+#BnrName {
+	position:absolute;
+	left:8px;
+	top:0px;
+	width:384px;
+	height:36px;
+}
+#BnrWhite {
+	position:absolute;
+	left:88px;
+	top:27px;
+	width:408px;
+	height:36px;
+	background-image: url(../../../COMMON/BG/Tab_White_L.gif);
+}
+-->
+</style>
+<script type="text/JavaScript">
+<!--
+var hour   = 0;
+var minute = 0;
+
+/* グローバルオブジェクト */
+var wii = new wiiSetting();
+
+function MM_swapImgRestore() { //v3.0
+  var i,x,a=document.MM_sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) x.src=x.oSrc;
+}
+
+function MM_preloadImages() { //v3.0
+  var d=document; if(d.images){ if(!d.MM_p) d.MM_p=new Array();
+    var i,j=d.MM_p.length,a=MM_preloadImages.arguments; for(i=0; i<a.length; i++)
+    if (a[i].indexOf("#")!=0){ d.MM_p[j]=new Image; d.MM_p[j++].src=a[i];}}
+}
+
+function MM_findObj(n, d) { //v4.01
+  var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
+    d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
+  if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
+  for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document);
+  if(!x && d.getElementById) x=d.getElementById(n); return x;
+}
+
+function MM_swapImage() { //v3.0
+  var i,j=0,x,a=MM_swapImage.arguments; document.MM_sr=new Array; for(i=0;i<(a.length-2);i+=3)
+   if ((x=MM_findObj(a[i]))!=null){document.MM_sr[j++]=x; if(!x.oSrc) x.oSrc=x.src; x.src=a[i+2];}
+	wii.se = 2;
+}
+function DrawTime()
+{
+	if( hour < 10 )
+	{
+		document.all.draw_hour.innerHTML = "0"+hour;
+	}
+	else
+	{
+		document.all.draw_hour.innerHTML = hour;
+	}
+	if( minute < 10 )
+	{
+		document.all.draw_minute.innerHTML = "0"+minute;
+	}
+	else
+	{
+		document.all.draw_minute.innerHTML = minute;
+	}
+}
+
+function ChangeTime()
+{
+	//CコードのwiiSetterが呼ばれる
+	wii.minute = minute;
+	wii.hour = hour;
+	wii.WriteBack();
+	wii.se = 3;
+}
+
+function ChangeHour(n)
+{
+	hour += Number(n);
+	if( hour == 24 )
+	{
+		hour = 0;
+	}
+	else if( hour < 0 )
+	{
+		hour = 23;
+	}
+	wii.se = 5;
+	DrawTime();
+}
+function ChangeMinute(n)
+{
+	minute += Number(n);
+	if( minute == 60 )
+	{
+		minute = 0;
+	}
+	else if( minute < 0 )
+	{
+		minute = 59;
+	}
+	wii.se = 5;
+	DrawTime();
+}
+
+function setSE()
+{
+	wii.se = 4;
+}
+
+//-->
+</script>
+</head>
+
+<body onload="MM_preloadImages('../../../COMMON/BG/BG_common.gif','../../../COMMON/BG/Tab_Middle_gray.gif','../../../COMMON/BG/Tab_White_L.gif','../../../COMMON/BG/Tab_gray02.gif','../../../COMMON/BTN/Allow_D_off.gif','../../../COMMON/BTN/Allow_D_on.gif','../../../COMMON/BTN/Allow_U_off.gif','../../../COMMON/BTN/Allow_U_on.gif','../../../COMMON/BTN/Under.gif','../../../COMMON/BTN/Under_off.png','../../../COMMON/BTN/Under_on.png')">
+<div id="UnderL"><a href="Calendar_index.html" onclick="setSE()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image6','','../../../COMMON/BTN/Under_on.png',1)"><img src="../../../COMMON/BTN/Under_off.png" name="Image6" width="272" height="72" border="0" id="Image6" /></a></div>
+<div id="UnderR"><a href="Calendar_index.html" onclick="ChangeTime()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image61','','../../../COMMON/BTN/Under_on.png',1)"><img src="../../../COMMON/BTN/Under_off.png" name="Image61" width="272" height="72" border="0" id="Image61" /></a></div>
+<div id="HourUP"><a href="#" onclick="ChangeHour('1')" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image3','','../../../COMMON/BTN/Allow_U_on.gif',1)"><img src="../../../COMMON/BTN/Allow_U_off.gif" name="Image3" width="72" height="72" border="0" id="Image3" /></a></div>
+<div id="MinUP"><a href="#" onclick="ChangeMinute('1')" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image31','','../../../COMMON/BTN/Allow_U_on.gif',1)"><img src="../../../COMMON/BTN/Allow_U_off.gif" name="Image31" width="72" height="72" border="0" id="Image31" /></a></div>
+<div id="HourDW"><a href="#" onclick="ChangeHour('-1')" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image33','','../../../COMMON/BTN/Allow_D_on.gif',1)"><img src="../../../COMMON/BTN/Allow_D_off.gif" name="Image33" width="72" height="72" border="0" id="Image33" /></a></div>
+<div id="MinDW"><a href="#" onclick="ChangeMinute('-1')" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image32','','../../../COMMON/BTN/Allow_D_on.gif',1)"><img src="../../../COMMON/BTN/Allow_D_off.gif" name="Image32" width="72" height="72" border="0" id="Image32" /></a></div>
+<table width="607" height="72" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th width="24" height="72" align="right" valign="bottom" scope="col">&nbsp;</th>
+    <th width="560" height="72" align="right" valign="middle" class="Title_name style1" scope="col">&nbsp;</th>
+    <th width="23" height="72" align="right" valign="bottom" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th width="24" height="35" scope="col">&nbsp;</th>
+    <th width="560" height="35" scope="col">&nbsp;</th>
+    <th width="23" height="35" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th width="24" height="72" scope="col">&nbsp;</th>
+    <th width="168" height="72" scope="col">&nbsp;</th>
+    <th width="88" height="72" scope="col">&nbsp;</th>
+    <th width="48" height="72" scope="col">&nbsp;</th>
+    <th width="88" height="72" scope="col">&nbsp;</th>
+    <th width="168" height="72" scope="col">&nbsp;</th>
+    <th width="23" height="72" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th width="24" height="72" scope="col">&nbsp;</th>
+    <th width="168" height="72" scope="col">&nbsp;</th>
+    <th width="88" height="72" class="style4" scope="col"><DIV id="draw_hour"></DIV></th>
+    <th width="48" height="72" align="center" valign="middle" class="Time_Colon" scope="col">:</th>
+    <th width="88" height="72" class="style4" scope="col"><DIV id="draw_minute"></DIV></th>
+    <th width="168" height="72" scope="col">&nbsp;</th>
+    <th width="23" height="72" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th width="24" height="72" scope="col">&nbsp;</th>
+    <th width="168" height="72" scope="col">&nbsp;</th>
+    <th width="88" height="72" scope="col">&nbsp;</th>
+    <th width="48" height="72" scope="col">&nbsp;</th>
+    <th width="88" height="72" scope="col">&nbsp;</th>
+    <th width="168" height="72" scope="col">&nbsp;</th>
+    <th width="23" height="72" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th width="24" height="28" scope="col">&nbsp;</th>
+    <th width="560" height="28" scope="col">&nbsp;</th>
+    <th width="23" height="28" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" height="95" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th width="24" height="95" scope="col">&nbsp;</th>
+    <th width="280" height="95" background="../../../COMMON/BTN/Under.gif" class="Under" scope="col">Back<!--2001--></th>
+    <th width="280" height="95" background="../../../COMMON/BTN/Under.gif" class="Under" scope="col">Confirm<!--2000--></th>
+    <th width="23" height="95" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<div id="BnrDarkGray"></div>
+<div id="BnrGray"></div>
+<div id="BnrWhite">
+  <div class="Title_name" id="BnrName"><strong>Time</strong>
+  <!--0302--></div>
+</div>
+<script>
+hour   = wii.hour;
+minute = wii.minute;
+DrawTime();
+</script>
+</body>
+</html>

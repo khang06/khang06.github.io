@@ -1,0 +1,351 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Hand_IPAddress_select</title>
+<link href="../../../style_sheet/Title_name.css" rel="stylesheet" type="text/css" />
+<link href="../../../style_sheet/List.css" rel="stylesheet" type="text/css" />
+<style type="text/css">
+<!--
+@import url("../../../style_sheet/Under.css");
+body {
+	background-repeat: repeat-x;
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+	background-image: url(../../../COMMON/BG/BG_common.gif);
+}
+a:link {
+	text-decoration: none;
+}
+a:visited {
+	text-decoration: none;
+}
+a:hover {
+	text-decoration: none;
+}
+a:active {
+	text-decoration: none;
+}
+.Allow2 {
+	background-repeat: no-repeat;
+	background-position: center 73px;
+}
+.style1 {
+	color: #FFFFFF;
+	font-size: 24px;
+	line-height: -60px;
+	text-align: right;
+}
+#List01 {
+	position:absolute;
+	left:128px;
+	top:122px;
+	width:352px;
+	height:76px;
+	z-index:2;
+}
+#List04 {
+	position:absolute;
+	left:208px;
+	top:300px;
+	width:192px;
+	height:60px;
+	z-index:2;
+}
+#List02 {
+	position:absolute;
+	left:128px;
+	top:218px;
+	width:352px;
+	height:76px;
+	z-index:2;
+}
+#Lbtn {
+	position:absolute;
+	left:30px;
+	top:184px;
+	width:64;
+	height:64;
+	
+}
+#UnderL {
+	position:absolute;
+	left:28px;
+	top:371px;
+	width:272px;
+	height:72px;
+	
+}
+#BnrGray {
+	position:absolute;
+	left:88px;
+	top:35px;
+	width:32px;
+	height:26px;
+	background-image: url(../../../COMMON/BG/Tab_gray02.gif);
+}
+#BnrName {
+	position:absolute;
+	left:8px;
+	top:0px;
+	width:384px;
+	height:36px;
+}
+#BnrWhite {
+	position:absolute;
+	left:120px;
+	top:27px;
+	width:408px;
+	height:36px;
+	background-image: url(../../../COMMON/BG/Tab_White_L.gif);
+}
+#BnrDarkGray {
+	position:absolute;
+	left:24px;
+	top:35px;
+	width:32px;
+	height:26px;
+	background-image: url(../../../COMMON/BG/Tab_Darkgray.gif);
+}
+#List01Check {
+	position:absolute;
+	left:118px;
+	top:112px;
+	width:24px;
+	height:96px;
+	visibility: hidden;
+}
+#List01CheckR {
+	position:absolute;
+	left:348px;
+	top:0px;
+	width:24px;
+	height:96px;
+	z-index:1;
+}
+#List02Check {
+	position:absolute;
+	left:118px;
+	top:208px;
+	width:24px;
+	height:160px;
+	visibility: hidden;
+}
+#List02CheckR {
+	position:absolute;
+	left:348px;
+	top:0px;
+	width:24px;
+	height:160px;
+	z-index:1;
+}
+#List03Check {
+	position:absolute;
+	left:88px;
+	top:264px;
+	width:24px;
+	height:96px;
+}
+#List03CheckR {
+	position:absolute;
+	left:408px;
+	top:0px;
+	width:24px;
+	height:96px;
+	z-index:1;
+}
+#BnrMGray {
+	position:absolute;
+	left:56px;
+	top:35px;
+	width:32px;
+	height:26px;
+	background-image: url(../../../COMMON/BG/Tab_Middle_gray02.gif);
+}
+.style2 {
+	color: #FFFF00;
+	font-size: 24px;
+}
+#List03 {
+	position:absolute;
+	left:136px;
+	top:298px;
+	width:336px;
+	height:64px;
+	z-index:2;	
+}
+#UnderR {
+	position:absolute;
+	left:308px;
+	top:371px;
+	width:272px;
+	height:72px;	
+}
+#Lbtn {
+	position:absolute;
+	left:26px;
+	top:180px;
+	width:64px;
+	height:64px;	
+}
+#Rbtn {
+	position:absolute;
+	left:510px;
+	top:180px;
+	width:64px;
+	height:64px;	
+}
+-->
+</style>
+<script type="text/JavaScript" src="../../../js/iplSetting.js">
+</script>
+<script type="text/JavaScript">
+<!--
+var wii = new wiiSetting();
+var tra = new wiiTrasition();
+
+function MM_swapImgRestore() { //v3.0
+  var i,x,a=document.MM_sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) x.src=x.oSrc;
+}
+
+function MM_preloadImages() { //v3.0
+  var d=document; if(d.images){ if(!d.MM_p) d.MM_p=new Array();
+    var i,j=d.MM_p.length,a=MM_preloadImages.arguments; for(i=0; i<a.length; i++)
+    if (a[i].indexOf("#")!=0){ d.MM_p[j]=new Image; d.MM_p[j++].src=a[i];}}
+}
+
+function MM_findObj(n, d) { //v4.01
+  var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
+    d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
+  if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
+  for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document);
+  if(!x && d.getElementById) x=d.getElementById(n); return x;
+}
+
+function MM_swapImage() { //v3.0
+  var i,j=0,x,a=MM_swapImage.arguments; document.MM_sr=new Array; for(i=0;i<(a.length-2);i+=3)
+   if ((x=MM_findObj(a[i]))!=null){document.MM_sr[j++]=x; if(!x.oSrc) x.oSrc=x.src; x.src=a[i+2];}
+	wii.se = 2;
+}
+function moveCheckImage(n)
+{
+	_moveCheckImageExe(2,n);
+	if(n == 1)
+	{
+		document.getElementById("mySet").style.backgroundImage = "url(../../../COMMON/BTN/Btn_List05_Dark.gif)";
+		document.all("List03").style.visibility="hidden";
+	}
+	else
+	{
+		document.getElementById("mySet").style.backgroundImage = "url(../../../COMMON/BTN/Btn_List05.gif)";
+		document.all("List03").style.visibility="visible";
+	}
+	wii.autoIP = Number(n);
+	wii.se = 3;
+}
+
+function setPage()
+{
+	wii.se = 3;
+	wii.pageID = 5;
+}
+
+function resetData()
+{
+	wii.se = 4;
+	data = wii.resetNCD;
+}
+
+function JSLeftScroll()
+{
+	tra.LeftScroll();
+	wii.se = 1;
+}
+
+function JSRightScroll()
+{
+	tra.RightScroll();
+	wii.se = 1;
+}
+
+//-->
+</script>
+</head>
+
+<body onload="MM_preloadImages('../../../COMMON/BG/BG_common.gif','../../../COMMON/BG/List_flame_L.gif','../../../COMMON/BG/List_flame_R.gif','../../../COMMON/BG/TV_flame_L.gif','../../../COMMON/BG/TV_flame_R.gif','../../../COMMON/BG/Tab_Darkgray.gif','../../../COMMON/BG/Tab_Middle_gray02.gif','../../../COMMON/BG/Tab_White_L.gif','../../../COMMON/BG/Tab_gray02.gif','../../../COMMON/BTN/Allow_L_off.gif','../../../COMMON/BTN/Allow_L_on.gif','../../../COMMON/BTN/Allow_R_off.gif','../../../COMMON/BTN/Allow_R_on.gif','../../../COMMON/BTN/Btn_List04.gif','../../../COMMON/BTN/Btn_List05.gif','../../../COMMON/BTN/Btn_List05_Dark.gif','../../../COMMON/BTN/List04_off.png','../../../COMMON/BTN/List04_on.png','../../../COMMON/BTN/List05_off.png','../../../COMMON/BTN/List05_on.png','../../../COMMON/BTN/Under.gif','../../../COMMON/BTN/Under_off.png','../../../COMMON/BTN/Under_on.png')">
+<div id="List01"><a href="#" onclick="moveCheckImage('1')" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image10','','../../../COMMON/BTN/List04_on.png',1)"><img src="../../../COMMON/BTN/List04_off.png" name="Image10" width="352" height="76" border="0" id="Image10" /></a></div>
+<div id="List03"><a href="Hand_IPAddress_keycode.html" onclick="setPage()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image9','','../../../COMMON/BTN/List05_on.png',1)"><img src="../../../COMMON/BTN/List05_off.png" name="Image9" width="336" height="64" border="0" id="Image9" /></a></div>
+<div id="List02"><a href="#" onclick="moveCheckImage('0')" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image101','','../../../COMMON/BTN/List04_on.png',1)"><img src="../../../COMMON/BTN/List04_off.png" name="Image101" width="352" height="76" border="0" id="Image101" /></a></div>
+<div id="UnderL"><a href="Re_Connect_set.html" onclick="resetData()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image6','','../../../COMMON/BTN/Under_on.png',1)"><img src="../../../COMMON/BTN/Under_off.png" name="Image6" width="272" height="72" border="0" id="Image6" /></a></div>
+<div id="BnrDarkGray"></div>
+<div id="BnrMGray"></div>
+<div id="BnrGray"></div>
+<div id="UnderR"><a href="Common0109.html" onclick="setData()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image5','','../../../COMMON/BTN/Under_on.png',1)"><img src="../../../COMMON/BTN/Under_off.png" name="Image5" width="272" height="72" border="0" id="Image5" /></a></div>
+<div id="Lbtn"><a href="Hand_Wi_Fi_select_security.html" onclick="JSLeftScroll()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image71','','../../../COMMON/BTN/Allow_L_on.gif',1)"><img src="../../../COMMON/BTN/Allow_L_off.gif" name="Image71" width="72" height="72" border="0" id="Image71" /></a></div>
+<div id="Rbtn"><a href="Hand_DNS_select.html" onclick="JSRightScroll()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image7','','../../../COMMON/BTN/Allow_R_on.gif',1)"><img src="../../../COMMON/BTN/Allow_R_off.gif" name="Image7" width="72" height="72" border="0" id="Image7" /></a></div>
+<div id="List01Check">
+  <div id="List01CheckR"><img src="../../../COMMON/BG/List_flame_R.gif" width="24" height="96" /></div>
+<img src="../../../COMMON/BG/List_flame_L.gif" width="24" height="96" /></div>
+<div id="List02Check">
+  <div id="List02CheckR"><img src="../../../COMMON/BG/TV_flame_R.gif" width="24" height="160" /></div>
+<img src="../../../COMMON/BG/TV_flame_L.gif" width="24" height="160" /></div>
+<table width="607" height="72" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th width="24" height="72" align="left" valign="middle" scope="col">&nbsp;</th>
+    <th width="560" height="72" align="right" valign="middle" class="Title_name style1" scope="col">&nbsp;</th>
+    <th width="23" height="72" align="right" valign="bottom" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" height="36" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th width="24" height="36" scope="col">&nbsp;</th>
+    <th width="560" height="36" class="List style2" scope="col">Obtener dirección IP automáticamente</th>
+    <th width="23" height="36" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" height="252" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th width="24" height="252" rowspan="3" scope="col">&nbsp;</th>
+    <th width="76" height="252" rowspan="3" class="Allow2" scope="col">&nbsp;</th>
+    <th width="408" height="104" background="../../../COMMON/BTN/Btn_List04.gif" class="List" scope="col">Sí</th>
+    <th width="76" height="252" rowspan="3" class="Allow2" scope="col">&nbsp;</th>
+    <th width="23" height="252" rowspan="3" scope="col">&nbsp;</th>
+  </tr>
+  <tr>
+    <th width="408" height="88" background="../../../COMMON/BTN/Btn_List04.gif" class="List" scope="col">No</th>
+  </tr>
+  <tr>
+    <th id="mySet" width="408" height="60" background="../../../COMMON/BTN/Btn_List05_Dark.gif" class="List" scope="col">Configuración avanzada</th>
+  </tr>
+</table>
+<table width="607" height="95" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th width="24" height="95" scope="col">&nbsp;</th>
+    <th width="280" height="95" background="../../../COMMON/BTN/Under.gif" class="Under" scope="col">Cancelar</th>
+    <th width="280" height="95" background="../../../COMMON/BTN/Under.gif" class="Under" scope="col">Guardar</th>
+    <th width="23" height="95" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<div id="BnrWhite">
+  <div class="Title_name" id="BnrName"></div>
+</div>
+<script>
+data=wii.profileID+1;
+document.all.BnrName.innerHTML = "Conexión "+data;
+data=wii.autoIP;
+if(data == 1)
+{
+	document.getElementById("mySet").style.backgroundImage = "url(../../../COMMON/BTN/Btn_List05_Dark.gif)";
+	document.all("List03").style.visibility="hidden";
+}
+else
+{
+	document.getElementById("mySet").style.backgroundImage = "url(../../../COMMON/BTN/Btn_List05.gif)";
+	document.all("List03").style.visibility="visible";
+}
+_moveCheckImageExe(2,data);
+</script>
+</body>
+</html>

@@ -1,0 +1,446 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Day_set</title>
+<style type="text/css">
+<!--
+@import url("../../../style_sheet/Under.css");
+body {
+	background-repeat: repeat-x;
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+	background-image: url(../../../COMMON/BG/BG_common.gif);
+}
+a:link {
+	text-decoration: none;
+}
+a:visited {
+	text-decoration: none;
+}
+a:hover {
+	text-decoration: none;
+}
+a:active {
+	text-decoration: none;
+}
+-->
+</style>
+<link href="../../../style_sheet/Title_name.css" rel="stylesheet" type="text/css" />
+<link href="../../../style_sheet/Allow.css" rel="stylesheet" type="text/css" />
+<style type="text/css">
+<!--
+.style1 {
+	color: #FFFFFF;
+	
+	font-size: 24px;
+	line-height: -60px;
+	text-align: right;
+}
+-->
+</style>
+<style type="text/css">
+<!--
+#List01 {
+	position:absolute;
+	left:107px;
+	top:85px;
+	width:394px;
+	height:70px;
+	
+}
+#List02 {
+	position:absolute;
+	left:107px;
+	top:181px;
+	width:394px;
+	height:70px;
+	
+}
+#List03 {
+	position:absolute;
+	left:107px;
+	top:277px;
+	width:394px;
+	height:70px;
+	
+}
+#Lbtn {
+	position:absolute;
+	left:30px;
+	top:184px;
+	width:64;
+	height:64;
+	
+	visibility: hidden;
+}
+#Rbtn {
+	position:absolute;
+	left:514px;
+	top:184px;
+	width:64;
+	height:64;
+	
+	visibility: hidden;
+}
+#UnderL {
+	position:absolute;
+	left:28px;
+	top:371px;
+	width:272px;
+	height:72px;
+	
+}
+#UnderR {
+	position:absolute;
+	left:308px;
+	top:371px;
+	width:272px;
+	height:72px;
+	
+}
+-->
+</style>
+<script type="text/JavaScript">
+<!--
+var year  = 0;
+var month = 0;
+var date  = 0;
+var max_date = 0;
+date_table = new Array(31,28,31,30,31,30,31,31,30,31,30,31);
+
+var wii = new wiiSetting();
+
+function MM_swapImgRestore() { //v3.0
+  var i,x,a=document.MM_sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) x.src=x.oSrc;
+}
+
+function MM_preloadImages() { //v3.0
+  var d=document; if(d.images){ if(!d.MM_p) d.MM_p=new Array();
+    var i,j=d.MM_p.length,a=MM_preloadImages.arguments; for(i=0; i<a.length; i++)
+    if (a[i].indexOf("#")!=0){ d.MM_p[j]=new Image; d.MM_p[j++].src=a[i];}}
+}
+
+function MM_findObj(n, d) { //v4.01
+  var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
+    d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
+  if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
+  for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document);
+  if(!x && d.getElementById) x=d.getElementById(n); return x;
+}
+
+function MM_swapImage() { //v3.0
+  var i,j=0,x,a=MM_swapImage.arguments; document.MM_sr=new Array; for(i=0;i<(a.length-2);i+=3)
+   if ((x=MM_findObj(a[i]))!=null){document.MM_sr[j++]=x; if(!x.oSrc) x.oSrc=x.src; x.src=a[i+2];}
+	wii.se = 2;
+}
+function DrawDate()
+{
+	document.all.draw_year.innerHTML = year+2000;
+	if( month < 10 )
+	{
+		document.all.draw_month.innerHTML = "0"+month;
+	}
+	else
+	{
+		document.all.draw_month.innerHTML = month;
+	}
+	if( date < 10 )
+	{
+		document.all.draw_date.innerHTML = "0"+date;
+	}
+	else
+	{
+		document.all.draw_date.innerHTML = date;
+	}
+}
+
+function ChangeDate()
+{
+	//CコードのwiiSetterが呼ばれる
+	//wii.year = year*10000+month*100+date;
+	wii.se = 3;
+	wii.date = date;
+	wii.month = month;
+	wii.year = year;
+
+	wii.WriteBack();
+}
+
+function UpYear()
+{
+	if( year < 35 )
+	{
+		year += 1;
+		judgeDate();
+		DrawDate();
+		wii.se = 5;
+	}
+	else
+	{
+		year = 0;
+		judgeDate();
+		DrawDate();
+		wii.se = 5;
+	}
+}
+function DownYear()
+{
+	if( year > 0 )
+	{
+		year -= 1;
+		judgeDate();
+		DrawDate();
+		wii.se = 5;
+	}
+	else
+	{
+		year = 35;
+		judgeDate();
+		DrawDate();
+		wii.se = 5;
+	}
+}
+function UpMonth()
+{
+	if( month < 12 )
+	{
+		month += 1;
+		judgeDate();
+		DrawDate();
+	}
+	else
+	{
+		month = 1;
+		judgeDate();
+		DrawDate();
+	}
+	wii.se = 5;
+}
+function DownMonth()
+{
+	if( month > 1 )
+	{
+		month -= 1;
+		judgeDate();
+		DrawDate();
+	}
+	else
+	{
+		month = 12;
+		judgeDate();
+		DrawDate();
+	}
+	wii.se = 5;
+}
+function UpDate()
+{
+	if( date < max_date )
+	{
+		date = date + 1;
+		DrawDate();
+	}
+	else
+	{
+		date = 1;
+		DrawDate();
+	}
+
+	wii.se = 5;
+}
+function DownDate()
+{
+	if( date > 1 )
+	{
+		date = date - 1;
+		DrawDate();
+	}
+	else
+	{
+		date = max_date;
+		DrawDate();
+	}
+	wii.se = 5;
+}
+
+function judgeDate()
+{
+	if( (( ( year % 4 ) == 0 ) && ( ( year % 100 ) != 0 ) || ( ( year % 400 ) == 0 )) && (month == 2) ){
+		max_date = 29;
+	}else{
+		max_date = date_table[month-1];
+	}
+
+	if( date > max_date ){
+		date = max_date;
+	}
+}
+
+function setSE()
+{
+	wii.se = 4;
+}
+
+//-->
+</script>
+<style type="text/css">
+<!--
+#MonthUP {
+	position:absolute;
+	left:88px;
+	top:108px;
+	width:72px;
+	height:72px;
+}
+#DayUP {
+	position:absolute;
+	left:224px;
+	top:108px;
+	width:72px;
+	height:72px;
+}
+#MonthDW {
+	position:absolute;
+	left:88px;
+	top:253px;
+	width:72px;
+	height:72px;
+}
+#DayDW {
+	position:absolute;
+	left:224px;
+	top:253px;
+	width:72px;
+	height:72px;
+}
+.style4 { font-size: 60px; color: #FFFFFF; }
+#YearUP {
+	position:absolute;
+	left:400px;
+	top:108px;
+	width:72px;
+	height:72px;
+}
+#YearDW {
+	position:absolute;
+	left:400px;
+	top:253px;
+	width:72px;
+	height:72px;
+}
+#BnrName {position:absolute;
+	left:8px;
+	top:0px;
+	width:384px;
+	height:36px;
+}
+#BnrWhite {
+	position:absolute;
+	left:24px;
+	top:27px;
+	width:408px;
+	height:38px;
+	background-image: url(../../../COMMON/BG/Tab_White_L.gif);
+	background-repeat: no-repeat;
+}
+-->
+</style>
+</head>
+
+<body onload="MM_preloadImages('../../../COMMON/BG/BG_common.gif','../../../COMMON/BG/Tab_White_L.gif','../../../COMMON/BTN/Allow_D_off.gif','../../../COMMON/BTN/Allow_D_on.gif','../../../COMMON/BTN/Allow_U_off.gif','../../../COMMON/BTN/Allow_U_on.gif','../../../COMMON/BTN/Under.gif','../../../COMMON/BTN/Under_off.png','../../../COMMON/BTN/Under_on.png')">
+<div id="UnderL"><a href="Sensor_bar_position.html" onclick="setSE()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image6','','../../../COMMON/BTN/Under_on.png',1)"><img src="../../../COMMON/BTN/Under_off.png" name="Image6" width="272" height="72" border="0" id="Image6" /></a></div>
+<div id="UnderR"><a href="Time_set.html" onclick="ChangeDate()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image61','','../../../COMMON/BTN/Under_on.png',1)"><img src="../../../COMMON/BTN/Under_off.png" name="Image61" width="272" height="72" border="0" id="Image61" /></a></div>
+<div id="MonthUP"><a href="#" onclick="UpMonth()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image31','','../../../COMMON/BTN/Allow_U_on.gif',1)"><img src="../../../COMMON/BTN/Allow_U_off.gif" name="Image31" width="72" height="72" border="0" id="Image31" /></a></div>
+<div id="DayUP"><a href="#" onclick="UpDate()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image32','','../../../COMMON/BTN/Allow_U_on.gif',1)"><img src="../../../COMMON/BTN/Allow_U_off.gif" name="Image32" width="72" height="72" border="0" id="Image32" /></a></div>
+<div id="MonthDW"><a href="#" onclick="DownMonth()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image41','','../../../COMMON/BTN/Allow_D_on.gif',1)"><img src="../../../COMMON/BTN/Allow_D_off.gif" name="Image41" width="72" height="72" border="0" id="Image41" /></a></div>
+<div id="DayDW"><a href="#" onclick="DownDate()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image42','','../../../COMMON/BTN/Allow_D_on.gif',1)"><img src="../../../COMMON/BTN/Allow_D_off.gif" name="Image42" width="72" height="72" border="0" id="Image42" /></a></div>
+<div id="YearUP"><a href="#" onclick="UpYear()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image3','','../../../COMMON/BTN/Allow_U_on.gif',1)"><img src="../../../COMMON/BTN/Allow_U_off.gif" name="Image3" width="72" height="72" border="0" id="Image3" /></a></div>
+<div id="YearDW"><a href="#" onclick="DownYear()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image4','','../../../COMMON/BTN/Allow_D_on.gif',1)"><img src="../../../COMMON/BTN/Allow_D_off.gif" name="Image4" width="72" height="72" border="0" id="Image4" /></a></div>
+<table width="607" height="72" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th width="24" height="72" align="right" valign="bottom" scope="col">&nbsp;</th>
+    <th width="560" height="72" align="right" valign="middle" class="Title_name style1" scope="col">&nbsp;</th>
+    <th width="23" height="72" align="right" valign="bottom" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th width="24" height="35" scope="col">&nbsp;</th>
+    <th width="560" height="35" scope="col">&nbsp;</th>
+    <th width="23" height="35" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th width="24" height="72" scope="col">&nbsp;</th>
+    <th width="56" height="72" scope="col">&nbsp;</th>
+    <th width="88" height="72" class="Allow" scope="col">&nbsp;</th>
+    <th width="48" height="72" scope="col">&nbsp;</th>
+    <th width="88" height="72" class="Allow" scope="col">&nbsp;</th>
+    <th width="48" height="72" scope="col">&nbsp;</th>
+    <th width="176" height="72" class="Allow" scope="col">&nbsp;</th>
+    <th width="56" height="72" scope="col">&nbsp;</th>
+    <th width="23" height="72" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th width="24" height="72" scope="col">&nbsp;</th>
+    <th width="56" height="72" scope="col">&nbsp;</th>
+    <th width="88" height="72" class="style4" scope="col"><DIV id="draw_month"></DIV></th>
+    <th width="48" height="72" class="style4" scope="col">/</th>
+    <th width="88" height="72" class="style4" scope="col"><DIV id="draw_date"></DIV></th>
+    <th width="48" height="72" class="style4" scope="col">/</th>
+    <th width="176" height="72" class="style4" scope="col"><DIV id="draw_year"></DIV></th>
+    <th width="56" height="72" scope="col">&nbsp;</th>
+    <th width="23" height="72" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th width="24" height="72" scope="col">&nbsp;</th>
+    <th width="56" height="72" scope="col">&nbsp;</th>
+    <th width="88" height="72" class="Allow" scope="col">&nbsp;</th>
+    <th width="48" height="72" scope="col">&nbsp;</th>
+    <th width="88" height="72" class="Allow" scope="col">&nbsp;</th>
+    <th width="48" height="72" scope="col">&nbsp;</th>
+    <th width="176" height="72" class="Allow" scope="col">&nbsp;</th>
+    <th width="56" height="72" scope="col">&nbsp;</th>
+    <th width="23" height="72" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th width="24" height="28" scope="col">&nbsp;</th>
+    <th width="560" height="28" scope="col">&nbsp;</th>
+    <th width="23" height="28" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" height="95" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th width="24" height="95" scope="col">&nbsp;</th>
+    <th width="280" height="95" background="../../../COMMON/BTN/Under.gif" class="Under" scope="col">Back</th>
+    <th width="280" height="95" background="../../../COMMON/BTN/Under.gif" class="Under" scope="col">Confirm</th>
+    <th width="23" height="95" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<div id="BnrWhite">
+  <div class="Title_name" id="BnrName">Date</div>
+</div>
+<script>
+year  = wii.year;
+month = wii.month;
+date  = wii.date;
+if( year > 35 )
+{
+	year  = 35;
+	month = 12;
+	date  = 31;
+}
+DrawDate();
+judgeDate();
+</script>
+</body>
+</html>

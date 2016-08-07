@@ -1,0 +1,295 @@
+@import url("../style_sheet/Under.css");
+body {
+	background-repeat: repeat-x;
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+	background-image: url(../../COMMON/BG/BG_common.gif);
+}
+a:link {
+	text-decoration: none;
+}
+a:visited {
+	text-decoration: none;
+}
+a:hover {
+	text-decoration: none;
+}
+a:active {
+	text-decoration: none;
+}
+
+
+.style1 {
+	color: #FFFFFF;
+	font-family: "FOT-ロダンNTLG Pro DB";
+	font-size: 24px;
+	line-height: -60px;
+	text-align: right;
+}
+
+
+#List01 {
+	position:absolute;
+	left:107px;
+	top:85px;
+	width:394px;
+	height:70px;
+	z-index:13;
+}
+#List02 {
+	position:absolute;
+	left:107px;
+	top:181px;
+	width:394px;
+	height:70px;
+	z-index:14;
+}
+#List03 {
+	position:absolute;
+	left:107px;
+	top:277px;
+	width:394px;
+	height:70px;
+	z-index:15;
+}
+#Lbtn {
+	position:absolute;
+	left:30px;
+	top:184px;
+	width:64;
+	height:64;
+	z-index:4;
+	visibility: hidden;
+}
+#Rbtn {
+	position:absolute;
+	left:514px;
+	top:184px;
+	width:64;
+	height:64;
+	z-index:5;
+	visibility: hidden;
+}
+#UnderL {
+	position:absolute;
+	left:28px;
+	top:371px;
+	width:272px;
+	height:72px;
+	z-index:16;
+}
+#UnderR {
+	position:absolute;
+	left:308px;
+	top:371px;
+	width:272px;
+	height:72px;
+	z-index:7;
+	visibility: hidden;
+}
+
+
+@import url("../style_sheet/MACaddress.css");
+#Layer1 {
+	position:absolute;
+	left:62px;
+	top:88px;
+	width:64px;
+	height:64px;
+	z-index:8;
+}
+#Layer2 {
+	position:absolute;
+	left:62px;
+	top:184px;
+	width:64px;
+	height:64px;
+	z-index:9;
+}
+#Layer3 {
+	position:absolute;
+	left:62px;
+	top:280px;
+	width:64px;
+	height:64px;
+	z-index:10;
+}
+#BnrGray {	position:absolute;
+	left:56px;
+	top:35px;
+	width:32px;
+	height:26px;
+	z-index:1;
+	background-image: url(../../COMMON/BG/Tab_gray.gif);
+}
+#BnrGrayIcon {	position:absolute;
+	left:0px;
+	top:0px;
+	width:32px;
+	height:26px;
+	z-index:9;
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-image: url(../../COMMON/Bnr_Icon/Bnr_InterNet_M.gif);
+}
+#BnrIcon {	position:absolute;
+	left:8px;
+	top:0px;
+	width:40px;
+	height:32px;
+	z-index:10;
+	background-position: center center;
+	background-repeat: no-repeat;
+	background-image: url(../../COMMON/Bnr_Icon/Bnr_Internet_Hardware_info.gif);
+}
+#BnrName {	position:absolute;
+	left:48px;
+	top:0px;
+	width:216px;
+	height:36px;
+	z-index:11;
+}
+#BnrWhite {	position:absolute;
+	left:88px;
+	top:27px;
+	width:280px;
+	height:36px;
+	z-index:2;
+	background-image: url(../../COMMON/BG/Tab_White.gif);
+}
+#ListIcon03 {	position:absolute;
+	left:128px;
+	top:296px;
+	width:56px;
+	height:32px;
+	z-index:8;
+}
+#ListIcon02 {	position:absolute;
+	left:128px;
+	top:200px;
+	width:56px;
+	height:32px;
+	z-index:7;
+}
+#ListIcon01 {	position:absolute;
+	left:128px;
+	top:104px;
+	width:56px;
+	height:32px;
+	z-index:6;
+}
+#BnrDarkGray {	position:absolute;
+	left:24px;
+	top:35px;
+	width:32px;
+	height:26px;
+	z-index:1;
+	background-image: url(../../COMMON/BG/Tab_Darkgray.gif);
+}
+#BnrDarkGrayIcon {	position:absolute;
+	left:0px;
+	top:0px;
+	width:30px;
+	height:26px;
+	z-index:9;
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-image: url(../../COMMON/Bnr_Icon/Bnr_Setting.gif);
+}
+#Connect1 {
+	position:absolute;
+	left:192px;
+	top:104px;
+	width:144px;
+	height:24px;
+	z-index:10;
+}
+#Connect2 {
+	position:absolute;
+	left:192px;
+	top:200px;
+	width:144px;
+	height:24px;
+	z-index:11;
+}
+#Connect3 {
+	position:absolute;
+	left:192px;
+	top:296px;
+	width:144px;
+	height:24px;
+	z-index:12;
+}
+#Info1 {
+	position:absolute;
+	left:160px;
+	top:0px;
+	width:136px;
+	height:24px;
+	z-index:11;
+}
+#Info2 {
+	position:absolute;
+	left:160px;
+	top:0px;
+	width:136px;
+	height:24px;
+	z-index:12;
+}
+#Info3 {
+	position:absolute;
+	left:160px;
+	top:0px;
+	width:136px;
+	height:24px;
+	z-index:13;
+}
+#List01Check {	position:absolute;
+	left:88px;
+	top:72px;
+	width:24px;
+	height:96px;
+	z-index:3;
+}
+#List01CheckR {	position:absolute;
+	left:408px;
+	top:0px;
+	width:24px;
+	height:96px;
+	z-index:1;
+}
+#List02Check {	position:absolute;
+	left:88px;
+	top:168px;
+	width:24px;
+	height:96px;
+	z-index:4;
+}
+#List02CheckR {	position:absolute;
+	left:408px;
+	top:0px;
+	width:24px;
+	height:96px;
+	z-index:3;
+}
+#List03Check {	position:absolute;
+	left:88px;
+	top:264px;
+	width:24px;
+	height:96px;
+	z-index:5;
+}
+#List03CheckR {	position:absolute;
+	left:408px;
+	top:0px;
+	width:24px;
+	height:96px;
+	z-index:4;
+}
+.style4 {
+	font-family: "FOT-ロダンNTLG Pro M";
+	font-size: 24px;
+	color: #FFFFFF;
+}

@@ -1,0 +1,300 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Wi_Fi_security_keycode</title>
+<link href="../../../style_sheet/Title_name.css" rel="stylesheet" type="text/css" />
+<link href="../../../style_sheet/List.css" rel="stylesheet" type="text/css" />
+<style type="text/css">
+<!--
+@import url("../../../style_sheet/Under.css");
+body {
+	background-repeat: repeat-x;
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+	background-image: url(../../../COMMON/BG/BG_common.gif);
+}
+a:link {
+	text-decoration: none;
+}
+a:visited {
+	text-decoration: none;
+}
+a:hover {
+	text-decoration: none;
+}
+a:active {
+	text-decoration: none;
+}
+.style1 {
+	color: #FFFFFF;
+	font-size: 24px;
+	line-height: -60px;
+	text-align: right;
+}
+#UnderL {
+	position:absolute;
+	left:28px;
+	top:371px;
+	width:272px;
+	height:72px;
+}
+#BnrDarkGray {
+	position:absolute;
+	left:24px;
+	top:35px;
+	width:32px;
+	height:26px;
+	background-image: url(../../../COMMON/BG/Tab_Darkgray.gif);
+}
+#BnrGray {
+	position:absolute;
+	left:88px;
+	top:35px;
+	width:32px;
+	height:26px;
+	background-image: url(../../../COMMON/BG/Tab_gray02.gif);
+}
+#BnrName {
+	position:absolute;
+	left:8px;
+	top:0px;
+	width:384px;
+	height:36px;
+}
+#BnrWhite {
+	position:absolute;
+	left:120px;
+	top:27px;
+	width:408px;
+	height:36px;
+	background-image: url(../../../COMMON/BG/Tab_White_L.gif);
+}
+#BnrMGray {
+	position:absolute;
+	left:56px;
+	top:35px;
+	width:32px;
+	height:26px;
+	background-image: url(../../../COMMON/BG/Tab_Middle_gray02.gif);
+}
+.style2 {
+	color: #FFFFFF;
+}
+.style3 {color: #FFFF00}
+.style5 {
+	font-size: 20px;
+	width: 460px;
+	height: 54px;
+	text-align: center;
+	font-family: "Wii NTLG Gothic Latin Regular", "Wii NTLG PGothic Latin Regular";
+	font-weight: bold;
+}
+.style7 {
+	font-size: 20px;
+	font-family: "Wii NTLG PGothic Latin Regular";
+	color: #FFFFFF;
+	font-weight: bold;
+	text-align: center;
+	background-position: center;
+}
+#SecName {
+	position:absolute;
+	left:56px;
+	top:136px;
+	width:160px;
+	height:24px;
+}
+.style8 {
+	font-size: 18px;
+}
+.style9 {
+	color: #333333;
+}
+.style10 {
+	font-family: "Wii NTLG PGothic Latin Regular";
+	font-size: 18px;
+	color: #FFFF00;
+	font-weight: bold;
+	background-position: left center;
+}
+#List01 {
+	position:absolute;
+	left:168px;
+	top:294px;
+	width:400px;
+	height:60px;
+}
+#Caution {
+	position:absolute;
+	left:232px;
+	top:124px;
+	width:320px;
+	height:48px;
+}
+#UnderR {
+	position:absolute;
+	left:308px;
+	top:371px;
+	width:272px;
+	height:72px;
+}
+#InputKey {
+	position:absolute;
+	left:48px;
+	top:188px;
+	width:512px;
+	height:88px;
+}
+-->
+</style>
+<script type="text/JavaScript">
+<!--
+var wii = new wiiSetting();
+
+function MM_swapImgRestore() { //v3.0
+  var i,x,a=document.MM_sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) x.src=x.oSrc;
+}
+
+function MM_preloadImages() { //v3.0
+  var d=document; if(d.images){ if(!d.MM_p) d.MM_p=new Array();
+    var i,j=d.MM_p.length,a=MM_preloadImages.arguments; for(i=0; i<a.length; i++)
+    if (a[i].indexOf("#")!=0){ d.MM_p[j]=new Image; d.MM_p[j++].src=a[i];}}
+}
+
+function MM_findObj(n, d) { //v4.01
+  var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
+    d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
+  if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
+  for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document);
+  if(!x && d.getElementById) x=d.getElementById(n); return x;
+}
+
+function MM_swapImage() { //v3.0
+  var i,j=0,x,a=MM_swapImage.arguments; document.MM_sr=new Array; for(i=0;i<(a.length-2);i+=3)
+   if ((x=MM_findObj(a[i]))!=null){document.MM_sr[j++]=x; if(!x.oSrc) x.oSrc=x.src; x.src=a[i+2];}
+	wii.se = 2;
+}
+
+function setString()
+{
+	//CコードのwiiSetterが呼ばれる
+	setTimeout("waitFuncResult()",1000);
+	wii.setstring = 3;
+	wii.se = 3;
+}
+
+function redrawAP()
+{
+	wii.se = 4;
+	wii.funcID = 7;
+}
+
+function setFormID()
+{
+	wii.formID = 22;
+}
+
+function waitFuncResult()
+{
+	result = wii.funcResult;
+	if( result == 3 )
+	{
+		location.href = "Common0205.html";
+	}
+	else if( result == 0 )
+	{
+		setTimeout("waitFuncResult()",1000);
+	}
+}
+
+function setSE()
+{
+	wii.se = 3;
+}
+//-->
+</script>
+</head>
+
+<body onload="MM_preloadImages('../../../COMMON/BG/BG_common.gif','../../../COMMON/BG/Tab_Darkgray.gif','../../../COMMON/BG/Tab_Middle_gray02.gif','../../../COMMON/BG/Tab_White_L.gif','../../../COMMON/BG/Tab_gray02.gif','../../../COMMON/BG/Wi_Fi_security_caoution_wak.gif','../../../COMMON/BTN/Btn_List03.gif','../../../COMMON/BTN/List03_off.png','../../../COMMON/BTN/List03_on.png','../../../COMMON/BTN/Under.gif','../../../COMMON/BTN/Under_off.png','../../../COMMON/BTN/Under_on.png')">
+<div id="BnrMGray"></div>
+<div class="style8" id="SecName">
+  <div align="center" class="style9">WPA2-PSK (AES)</div>
+</div>
+<div id="List01"><a href="Wi_Fi_select_security.html" onclick="setSE()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image3','','../../../COMMON/BTN/List03_on.png',1)"><img src="../../../COMMON/BTN/List03_off.png" name="Image3" width="400" height="60" border="0" id="Image3" /></a></div>
+<div class="style10" id="Caution">
+  <table width="320" height="48" border="0" cellpadding="0" cellspacing="0">
+    <tr>
+      <th scope="col">Este punto de acceso<br />está protegido.</th>
+    </tr>
+  </table>
+</div>
+<div id="UnderR"><a href="javaScript:void(0)" onclick="setString()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image21','','../../../COMMON/BTN/Under_on.png',1)"><img src="../../../COMMON/BTN/Under_off.png" name="Image21" width="272" height="72" border="0" id="Image21" /></a></div>
+<div id="InputKey">
+  <div align="center"><span class="style7">Introducir</span><br />
+<textarea name="textfield" cols="32" rows="2" wrap="physical" class="style5" style="overflow:hidden" onclick="setFormID()"></textarea>
+  </div>
+</div>
+<table width="607" height="72" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th width="24" height="72" align="right" valign="bottom" scope="col">&nbsp;</th>
+    <th width="560" height="72" align="right" valign="middle" class="Title_name style1" scope="col">&nbsp;</th>
+    <th width="23" height="72" align="right" valign="bottom" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" height="40" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th width="24" height="40" scope="col">&nbsp;</th>
+    <th height="40" class="List style3" scope="col"><div id="mySet"></div></th>
+    <th width="23" height="40" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" height="176" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th width="24" height="176" scope="col">&nbsp;</th>
+    <th width="560" height="176" background="../../../COMMON/BG/Wi_Fi_security_caoution_wak.gif" class="List style2" scope="col">&nbsp;</th>
+    <th width="23" height="176" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" height="72" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th width="24" height="72" scope="col">&nbsp;</th>
+    <th width="144" height="72" class="List style3" scope="col">&nbsp;</th>
+    <th width="400" height="72" background="../../../COMMON/BTN/Btn_List03.gif" class="List" scope="col">Cambiar la clave de seguridad</th>
+    <th width="16" height="72" class="List style3" scope="col">&nbsp;</th>
+    <th width="23" height="72" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" height="95" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th width="24" scope="col">&nbsp;</th>
+    <th width="280" background="../../../COMMON/BTN/Under.gif" class="Under" scope="col">Atrás</th>
+    <th width="280" background="../../../COMMON/BTN/Under.gif" class="Under" scope="col">Aceptar</th>
+    <th width="23" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<div id="UnderL"><a href="APlist_select_Flame.html" onclick="redrawAP()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image2','','../../../COMMON/BTN/Under_on.png',1)"><img src="../../../COMMON/BTN/Under_off.png" name="Image2" width="272" height="72" border="0" id="Image2" /></a></div>
+<div id="BnrDarkGray"></div>
+<div id="BnrGray"></div>
+<div id="BnrWhite">
+  <div class="Title_name" id="BnrName"></div>
+</div>
+<script>
+data=wii.profileID+1;
+document.all.BnrName.innerHTML = "Conexión "+data;
+document.all.mySet.innerHTML = wii.ssID;
+document.all.textfield.value = wii.dummySec;
+data=wii.selectSecKey;
+switch(data)
+{
+case 1: document.all.SecName.innerHTML = "WEP";           break;
+case 2: document.all.SecName.innerHTML = "WPA-PSK (TKIP)";         break;
+case 3: document.all.SecName.innerHTML = "WPA-PSK (AES)";  break;
+case 4: document.all.SecName.innerHTML = "WPA2-PSK (AES)"; break;
+}
+setTimeout("waitFuncResult()",1000);
+</script>
+</body>
+</html>

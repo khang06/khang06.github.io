@@ -1,0 +1,131 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>ESRB06</title>
+<style type="text/css">
+<!--
+body {
+	background-repeat: repeat;
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+	background-image: url(../../../COMMON/BG/BG_common_M.gif);
+}
+.style1 {
+	color: #FFFFFF;
+	font-family: "Wii NTLG Gothic Latin Regular", "Wii NTLG PGothic Latin Regular";
+	font-size: 24px;
+	font-weight: bold;
+	text-align: left;
+	vertical-align: middle;
+}
+.Rating_waku {	color: #FFFFFF;
+	background-repeat: no-repeat;
+	background-position: center center;
+	text-align: left;
+	vertical-align: middle;
+	font-size: 14px;
+}
+#ListUP {
+	position:absolute;
+	left:528px;
+	top:8px;
+	width:72px;
+	height:72px;
+}
+#List01 {
+	position:absolute;
+	left:24px;
+	top:21px;
+	width:496px;
+	height:256px;
+}
+#List01Check {
+	position:absolute;
+	left:35px;
+	top:96px;
+	width:96px;
+	height:96px;
+	visibility: hidden;
+}
+.style8 {font-size: 18px}
+.style9 {font-size: 20px}
+-->
+</style>
+<script type="text/JavaScript">
+<!--
+var wii = new wiiSetting();
+
+function MM_swapImgRestore() { //v3.0
+  var i,x,a=document.MM_sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) x.src=x.oSrc;
+}
+
+function MM_preloadImages() { //v3.0
+  var d=document; if(d.images){ if(!d.MM_p) d.MM_p=new Array();
+    var i,j=d.MM_p.length,a=MM_preloadImages.arguments; for(i=0; i<a.length; i++)
+    if (a[i].indexOf("#")!=0){ d.MM_p[j]=new Image; d.MM_p[j++].src=a[i];}}
+}
+
+function MM_findObj(n, d) { //v4.01
+  var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
+    d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
+  if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
+  for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document);
+  if(!x && d.getElementById) x=d.getElementById(n); return x;
+}
+
+function MM_swapImage() { //v3.0
+  var i,j=0,x,a=MM_swapImage.arguments; document.MM_sr=new Array; for(i=0;i<(a.length-2);i+=3)
+   if ((x=MM_findObj(a[i]))!=null){document.MM_sr[j++]=x; if(!x.oSrc) x.oSrc=x.src; x.src=a[i+2];}
+	wii.se = 2;
+}
+function moveCheckImage()
+{
+	wii.excse = 5;
+	document.all("List01Check").style.visibility="visible";
+	wii.rate = 3;
+}
+
+function setSE()
+{
+	wii.excse = 1;
+}
+
+//-->
+</script>
+</head>
+
+<body onload="MM_preloadImages('../../../COMMON/BG/BG_common_M.gif','../../../COMMON/BG/Rating_Mark_waku_USEU02.gif','../../../COMMON/BG/Rating_waku_L_off.gif','../../../COMMON/BG/Rating_waku_R_off.gif','../../../COMMON/BG/Rating_waku_USEU_off.gif','../../../COMMON/BG/Rating_waku_USEU_on.gif','../../../COMMON/BTN/Allow_U_off.gif','../../../COMMON/BTN/Allow_U_on.gif','../../../COMMON/BTN/Btn_U_on_ver2.gif','../../../COMMON/ESRB/eC.gif')">
+<div id="List01"><a href="#" onclick="moveCheckImage()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image41','','../../../COMMON/BG/Rating_waku_USEU_on.gif',1)"><img src="../../../COMMON/BG/Rating_waku_USEU_off.gif" name="Image41" width="496" height="256" border="0" id="Image41" /></a></div>
+<div id="ListUP"><a href="ESRB05.html" onclick="setSE()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image4','','../../../COMMON/BTN/Allow_U_on.gif',1)"><img src="../../../COMMON/BTN/Allow_U_off.gif" name="Image4" width="72" height="72" border="0" id="Image4" /></a></div>
+<div id="List01Check"><img src="../../../COMMON/BG/Rating_Mark_waku_USEU02.gif" width="96" height="96" /></div>
+<table width="606" border="0" cellpadding="0" >
+  <tr>
+    <th width="24" height="288" scope="col">&nbsp;</th>
+    <th width="120" height="288" background="../../../COMMON/BG/Rating_waku_L_off.gif" class="Rating_waku" scope="col"><div align="center"><img src="../../../COMMON/ESRB/eC.gif" width="51" height="72" /></div></th>
+    <th width="376" height="288" background="../../../COMMON/BG/Rating_waku_R_off.gif" class="style1" scope="col">
+<span class="style9"><strong>
+EC (EARLY CHILDHOOD – NIÑEZ TEMPRANA):
+</strong></span>
+<span class="style8"><br />
+Podría ser apto para niños mayores de <br />3 años.  No contienen ningún material que los padres encontrarían inapropiado.
+</span></th>
+    <th width="86" height="288" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<script>
+// 初期化、wiiから取得した値を反映
+var data = wii.rate;
+if( data == 3 )
+{
+	document.all("List01Check").style.visibility="visible";
+}
+else
+{
+	document.all("List01Check").style.visibility="hidden";
+}
+</script>
+</body>
+</html>

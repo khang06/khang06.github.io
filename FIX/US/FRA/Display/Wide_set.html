@@ -1,0 +1,230 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Wide_set</title>
+<link href="../../../style_sheet/Title_name.css" rel="stylesheet" type="text/css" />
+<link href="../../../style_sheet/Allow.css" rel="stylesheet" type="text/css" />
+<link href="../../../style_sheet/List.css" rel="stylesheet" type="text/css" />
+<style type="text/css">
+<!--
+@import url("../../../style_sheet/Under.css");
+body {
+	background-repeat: repeat-x;
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+	background-image: url(../../../COMMON/BG/BG_common.gif);
+}
+a:link {
+	text-decoration: none;
+}
+a:visited {
+	text-decoration: none;
+}
+a:hover {
+	text-decoration: none;
+}
+a:active {
+	text-decoration: none;
+}
+.style1 {
+	color: #FFFFFF;
+	font-size: 24px;
+	line-height: -60px;
+	text-align: right;
+}
+#UnderL {
+	position:absolute;
+	left:28px;
+	top:371px;
+	width:272px;
+	height:72px;
+}
+#UnderR {
+	position:absolute;
+	left:308px;
+	top:371px;
+	width:272px;
+	height:72px;
+}
+#List01Check {
+	position:absolute;
+	left:38px;
+	top:136px;
+	width:24px;
+	height:160px;
+	visibility: hidden;
+}
+#List01CheckR {
+	position:absolute;
+	left:196px;
+	top:0px;
+	width:24px;
+	height:160px;
+	z-index:1;
+}
+#List02Check {
+	position:absolute;
+	left:286px;
+	top:136px;
+	width:24px;
+	height:160px;
+	visibility: hidden;
+}
+#List02CheckR {
+	position:absolute;
+	left:260px;
+	top:0px;
+	width:24px;
+	height:160px;
+	z-index:1;
+}
+#List01 {
+	position:absolute;
+	left:48px;
+	top:146px;
+	width:200px;
+	height:140px;
+	z-index:2;
+}
+#List02 {
+	position:absolute;
+	left:296px;
+	top:146px;
+	width:264px;
+	height:140px;
+	z-index:2;
+}
+#BnrDarkGray {
+	position:absolute;
+	left:24px;
+	top:35px;
+	width:32px;
+	height:26px;
+	background-image: url(../../../COMMON/BG/Tab_Middle_gray.gif);
+}
+#BnrGray {position:absolute;
+	left:54px;
+	top:35px;
+	width:32px;
+	height:26px;
+	background-image: url(../../../COMMON/BG/Tab_gray02.gif);
+}
+#BnrName {
+	position:absolute;
+	left:8px;
+	top:0px;
+	width:384px;
+	height:36px;
+}
+#BnrWhite {
+	position:absolute;
+	left:86px;
+	top:27px;
+	width:408px;
+	height:36px;
+	background-image: url(../../../COMMON/BG/Tab_White_L.gif);
+}
+-->
+</style>
+<script type="text/JavaScript" src="../../../js/iplSetting.js">
+</script>
+<script type="text/JavaScript">
+<!--
+var wii = new wiiSetting();
+
+function MM_swapImgRestore() { //v3.0
+  var i,x,a=document.MM_sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) x.src=x.oSrc;
+}
+
+function MM_preloadImages() { //v3.0
+  var d=document; if(d.images){ if(!d.MM_p) d.MM_p=new Array();
+    var i,j=d.MM_p.length,a=MM_preloadImages.arguments; for(i=0; i<a.length; i++)
+    if (a[i].indexOf("#")!=0){ d.MM_p[j]=new Image; d.MM_p[j++].src=a[i];}}
+}
+
+function MM_findObj(n, d) { //v4.01
+  var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
+    d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
+  if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
+  for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document);
+  if(!x && d.getElementById) x=d.getElementById(n); return x;
+}
+
+function MM_swapImage() { //v3.0
+  var i,j=0,x,a=MM_swapImage.arguments; document.MM_sr=new Array; for(i=0;i<(a.length-2);i+=3)
+   if ((x=MM_findObj(a[i]))!=null){document.MM_sr[j++]=x; if(!x.oSrc) x.oSrc=x.src; x.src=a[i+2];}
+	wii.se = 2;
+}
+
+function moveCheckImage(n)
+{
+	wii.se = 5;
+	_moveCheckImageExe(2,n);
+	wii.dis_wide = Number(n^1);
+}
+
+function setWiiData()
+{
+	wii.WriteBack();
+	wii.se = 3;
+}
+
+function setSE()
+{
+	wii.se = 4;
+}
+
+//-->
+</script>
+<body onload="MM_preloadImages('../../../COMMON/BG/BG_common.gif','../../../COMMON/BG/TV_flame_L.gif','../../../COMMON/BG/TV_flame_R.gif','../../../COMMON/BG/Tab_Middle_gray.gif','../../../COMMON/BG/Tab_White_L.gif','../../../COMMON/BG/Tab_gray02.gif','../../../COMMON/BTN/16_9_Btn.gif','../../../COMMON/BTN/16_9_off.png','../../../COMMON/BTN/16_9_on.png','../../../COMMON/BTN/4_3_Btn.gif','../../../COMMON/BTN/4_3_off.png','../../../COMMON/BTN/4_3_on.png','../../../COMMON/BTN/Under.gif','../../../COMMON/BTN/Under_off.png','../../../COMMON/BTN/Under_on.png')">
+<div id="UnderL"><a href="Display_index.html" onclick="setSE()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image6','','../../../COMMON/BTN/Under_on.png',1)"><img src="../../../COMMON/BTN/Under_off.png" name="Image6" width="272" height="72" border="0" id="Image6" /></a></div>
+<div id="UnderR"><a href="Display_index.html" onclick="setWiiData()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image61','','../../../COMMON/BTN/Under_on.png',1)"><img src="../../../COMMON/BTN/Under_off.png" name="Image61" width="272" height="72" border="0" id="Image61" /></a></div>
+<div id="List01Check">
+  <div id="List01CheckR"><img src="../../../COMMON/BG/TV_flame_R.gif" width="24" height="160" /></div>
+<img src="../../../COMMON/BG/TV_flame_L.gif" width="24" height="160" /></div>
+<div id="List02Check">
+  <div id="List02CheckR"><img src="../../../COMMON/BG/TV_flame_R.gif" width="24" height="160" /></div>
+<img src="../../../COMMON/BG/TV_flame_L.gif" width="24" height="160" /></div>
+<div id="List01"><a href="#" onclick="moveCheckImage('1')" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image7','','../../../COMMON/BTN/4_3_on.png',1)"><img src="../../../COMMON/BTN/4_3_off.png" name="Image7" width="200" height="140" border="0" id="Image7" /></a></div>
+<div id="List02"><a href="#" onclick="moveCheckImage('0')" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image8','','../../../COMMON/BTN/16_9_on.png',1)"><img src="../../../COMMON/BTN/16_9_off.png" name="Image8" width="264" height="140" border="0" id="Image8" /></a></div>
+<table width="607" height="72" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th width="24" height="72" align="right" valign="bottom" scope="col">&nbsp;</th>
+    <th width="560" height="72" align="right" valign="middle" class="Title_name style1" scope="col">&nbsp;</th>
+    <th width="23" height="72" align="right" valign="bottom" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th width="24" height="288" scope="col">&nbsp;</th>
+    <th width="24" height="288" class="Allow" scope="col">&nbsp;</th>
+    <th width="200" background="../../../COMMON/BTN/4_3_Btn.gif" class="List" scope="col">4:3<!--0609--></th>
+    <th width="48" class="Allow" scope="col">&nbsp;</th>
+    <th width="264" background="../../../COMMON/BTN/16_9_Btn.gif" class="List" scope="col">16:9<!--0608--></th>
+    <th width="24" class="Allow" scope="col">&nbsp;</th>
+    <th width="23" height="288" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" height="95" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th width="24" scope="col">&nbsp;</th>
+    <th width="280" background="../../../COMMON/BTN/Under.gif" class="Under" scope="col">Retour<!--2001--></th>
+    <th width="280" background="../../../COMMON/BTN/Under.gif" class="Under" scope="col">Valider<!--2000--></th>
+    <th width="23" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<div id="BnrDarkGray"></div>
+<div id="BnrGray"></div>
+<div id="BnrWhite">
+  <div class="Title_name" id="BnrName">Format<!--0602--></div>
+</div>
+<script>
+// 初期化、wiiから取得した値を反映
+var data = wii.dis_wide;
+_moveCheckImageExe(2,data^1);
+</script>
+</body>
+</html>

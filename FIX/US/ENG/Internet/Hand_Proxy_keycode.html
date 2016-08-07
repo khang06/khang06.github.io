@@ -1,0 +1,319 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Hand_Proxy_keycode</title>
+<link href="../../../style_sheet/Title_name.css" rel="stylesheet" type="text/css" />
+<link href="../../../style_sheet/List.css" rel="stylesheet" type="text/css" />
+<style type="text/css">
+<!--
+@import url("../../../style_sheet/Under.css");
+body {
+	background-repeat: repeat-x;
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+	background-image: url(../../../COMMON/BG/BG_common.gif);
+}
+a:link {
+	text-decoration: none;
+}
+a:visited {
+	text-decoration: none;
+}
+a:hover {
+	text-decoration: none;
+}
+a:active {
+	text-decoration: none;
+}
+.style1 {
+	color: #FFFFFF;
+	font-size: 24px;
+	line-height: -60px;
+	text-align: right;
+}
+#UnderL {
+	position:absolute;
+	left:28px;
+	top:371px;
+	width:272px;
+	height:72px;
+}
+#UnderR {
+	position:absolute;
+	left:308px;
+	top:371px;
+	width:272px;
+	height:72px;
+}
+#BnrDarkGray {
+	position:absolute;
+	left:24px;
+	top:35px;
+	width:32px;
+	height:26px;
+	background-image: url(../../../COMMON/BG/Tab_Darkgray.gif);
+}
+#BnrGray {
+	position:absolute;
+	left:88px;
+	top:35px;
+	width:32px;
+	height:26px;
+	background-image: url(../../../COMMON/BG/Tab_gray02.gif);
+}
+#BnrName {
+	position:absolute;
+	left:8px;
+	top:0px;
+	width:384px;
+	height:36px;
+}
+#BnrWhite {
+	position:absolute;
+	left:120px;
+	top:27px;
+	width:408px;
+	height:36px;
+	background-image: url(../../../COMMON/BG/Tab_White_L.gif);
+}
+#BnrMGray {
+	position:absolute;
+	left:56px;
+	top:35px;
+	width:32px;
+	height:26px;
+	background-image: url(../../../COMMON/BG/Tab_Middle_gray02.gif);
+}
+.style2 {
+	color: #FFFFFF;
+}
+.style3 {color: #FFFF00}
+.style4 {
+	font-size: 24px;
+	font-family: "Wii NTLG Gothic Latin Regular", "Wii NTLG PGothic Latin Regular";
+	color: #333333;
+	text-align: center;
+	font-weight: bold;
+}
+.style10 {color: #FFFFFF; font-size: 20px; }
+#List01 {
+	position:absolute;
+	left:380px;
+	top:292px;
+	width:190px;
+	height:60px;
+	z-index:2;
+}
+#List02 {
+	position:absolute;
+	left:27px;
+	top:290px;
+	width:336px;
+	height:64px;
+	z-index:2;
+}
+#List03 {
+	position:absolute;
+	left:380px;
+	top:216px;
+	width:190px;
+	height:60px;
+	z-index:2;
+}
+#List01Check {
+	position:absolute;
+	left:363px;
+	top:290px;
+	width:24px;
+	height:64px;
+	visibility: hidden;
+}
+#List01CheckR {
+	position:absolute;
+	left:200px;
+	top:0px;
+	width:24px;
+	height:64px;
+	z-index:1;
+}
+#List02Check {
+	position:absolute;
+	left:363px;
+	top:214px;
+	width:24px;
+	height:64px;
+	visibility: hidden;
+}
+#List02CheckR {
+	position:absolute;
+	left:200px;
+	top:0px;
+	width:24px;
+	height:64px;
+	z-index:1;
+}
+-->
+</style>
+<script type="text/JavaScript" src="../../../js/iplSetting.js">
+</script>
+<script type="text/JavaScript">
+<!--
+var wii = new wiiSetting();
+
+function MM_swapImgRestore() { //v3.0
+  var i,x,a=document.MM_sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) x.src=x.oSrc;
+}
+
+function MM_preloadImages() { //v3.0
+  var d=document; if(d.images){ if(!d.MM_p) d.MM_p=new Array();
+    var i,j=d.MM_p.length,a=MM_preloadImages.arguments; for(i=0; i<a.length; i++)
+    if (a[i].indexOf("#")!=0){ d.MM_p[j]=new Image; d.MM_p[j++].src=a[i];}}
+}
+
+function MM_findObj(n, d) { //v4.01
+  var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
+    d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
+  if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
+  for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document);
+  if(!x && d.getElementById) x=d.getElementById(n); return x;
+}
+
+function MM_swapImage() { //v3.0
+  var i,j=0,x,a=MM_swapImage.arguments; document.MM_sr=new Array; for(i=0;i<(a.length-2);i+=3)
+   if ((x=MM_findObj(a[i]))!=null){document.MM_sr[j++]=x; if(!x.oSrc) x.oSrc=x.src; x.src=a[i+2];}
+	wii.se = 2;
+}
+function moveCheckImage(n)
+{
+	_moveCheckImageExe(2,n);
+	if(n == 0)
+	{
+		document.getElementById("mySet").style.backgroundImage = "url(../../../COMMON/BTN/Btn_List_M_Dark.gif)";
+		document.all("List02").style.visibility="hidden";
+	}
+	else
+	{
+		document.getElementById("mySet").style.backgroundImage = "url(../../../COMMON/BTN/Btn_List_M02.gif)";
+		document.all("List02").style.visibility="visible";
+	}
+	wii.autoBasic = Number(n);
+}
+
+function setString()
+{
+	wii.setstring = 7;
+}
+
+function setPage()
+{
+	wii.setstring = 7;
+	wii.pageID = 8;
+}
+
+function setForm(n)
+{
+	wii.formID = Number(n);
+}
+
+function resetData()
+{
+	wii.se = 4;
+	data = wii.resetNCD;
+}
+//-->
+</script>
+<style type="text/css">
+<!--
+-->
+</style>
+</head>
+
+<body onload="MM_preloadImages('../../../COMMON/BG/BG_common.gif','../../../COMMON/BG/List_flame_M_L.gif','../../../COMMON/BG/List_flame_M_R.gif','../../../COMMON/BG/Tab_Darkgray.gif','../../../COMMON/BG/Tab_Middle_gray02.gif','../../../COMMON/BG/Tab_White_L.gif','../../../COMMON/BG/Tab_gray02.gif','../../../COMMON/BTN/Btn_List05_Dark.gif','../../../COMMON/BTN/Btn_List_M02.gif','../../../COMMON/BTN/Btn_List_M_Dark.gif','../../../COMMON/BTN/List05_off.png','../../../COMMON/BTN/List05_on.png','../../../COMMON/BTN/List_M02_off.png','../../../COMMON/BTN/List_M02_on.png','../../../COMMON/BTN/Under.gif','../../../COMMON/BTN/Under_off.png','../../../COMMON/BTN/Under_on.png')">
+<div id="BnrMGray"></div>
+<div id="List01"><a href="#" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image8','','../../../COMMON/BTN/List_M02_on.png',1)"><img src="../../../COMMON/BTN/List_M02_off.png" name="Image8" width="190" height="60" border="0" id="Image8" /></a></div>
+<div id="List02"><a href="Hand_Basic_keycode.html" onclick="setPage()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image9','','../../../COMMON/BTN/List05_on.png',1)"><img src="../../../COMMON/BTN/List05_off.png" name="Image9" width="336" height="64" border="0" id="Image9" /></a></div>
+<div id="List03"><a href="#" onclick="moveCheckImage('0')" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image81','','../../../COMMON/BTN/List_M02_on.png',1)"><img src="../../../COMMON/BTN/List_M02_off.png" name="Image81" width="190" height="60" border="0" id="Image81" /></a></div>
+<div id="List01Check">
+  <div id="List01CheckR"><img src="../../../COMMON/BG/List_flame_M_R.gif" width="24" height="64" /></div>
+<img src="../../../COMMON/BG/List_flame_M_L.gif" width="24" height="64" /></div>
+<div id="List02Check">
+  <div id="List02CheckR"><img src="../../../COMMON/BG/List_flame_M_R.gif" width="24" height="64" /></div>
+<img src="../../../COMMON/BG/List_flame_M_L.gif" width="24" height="64" /></div>
+<table width="607" height="72" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th width="24" height="72" align="right" valign="bottom" scope="col">&nbsp;</th>
+    <th width="560" height="72" align="right" valign="middle" class="Title_name style1" scope="col"><div id="UnderR"><a href="Hand_Proxy_select.html" onclick="setString()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image2','','../../../COMMON/BTN/Under_on.png',1)"><img src="../../../COMMON/BTN/Under_off.png" name="Image2" width="272" height="72" border="0" id="Image2" /></a></div></th>
+    <th width="23" height="72" align="right" valign="bottom" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th width="24" height="68" class="style10" scope="col">&nbsp;</th>
+    <th width="560" height="68" class="List style2" scope="col"><span class="style10">Proxy Server</span><br />
+	<input name="textfield" type="text" class="style4" value="00000000000000000000000000000000" size="33" maxlength="256" onclick="setForm('10')" /></th>
+    <th width="23" height="68" class="style4" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th width="24" height="68" class="style10" scope="col">&nbsp;</th>
+    <th width="560" height="68" class="List style2" scope="col"><span class="style10">Port</span><br />
+	<input name="textfield22" type="text" class="style4" value="00000" size="6" maxlength="5" onclick="setForm('11')" />
+    </span></th>
+    <th width="23" height="68" class="style4" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th width="24" height="76" scope="col">&nbsp;</th>
+    <th width="342" height="76" scope="col"><span class="List style3">User Name & Password</span></th>
+    <th width="218" height="76" background="../../../COMMON/BTN/Btn_List_M02.gif" class="List" scope="col">No</th>
+    <th width="23" height="76" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th width="24" height="76" scope="col">&nbsp;</th>
+    <th width="342" height="76" background="../../../COMMON/BTN/Btn_List05_Dark.gif" class="List" scope="col">Advanced Settings</th>
+    <th width="218" height="76" background="../../../COMMON/BTN/Btn_List_M02.gif" class="List" scope="col">Yes</th>
+    <th width="23" height="76" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" height="95" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th width="24" height="95" scope="col">&nbsp;</th>
+    <th width="280" height="95" background="../../../COMMON/BTN/Under.gif" class="Under" scope="col">Back</th>
+    <th width="280" height="95" background="../../../COMMON/BTN/Under.gif" class="Under" scope="col">Confirm</th>
+    <th width="23" height="95" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<div id="UnderL"><a href="Connect_set_top.html" onclick="resetData()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image6','','../../../COMMON/BTN/Under_on.png',1)"></a><a href="Hand_Proxy_select.html" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image21','','../../../COMMON/BTN/Under_on.png',1)"><img src="../../../COMMON/BTN/Under_off.png" name="Image21" width="272" height="72" border="0" id="Image21" /></a></div>
+<div id="BnrDarkGray"></div>
+<div id="BnrGray"></div>
+<div id="BnrWhite">
+  <div class="Title_name" id="BnrName"></div>
+</div>
+<script>
+document.all.textfield.value=wii.proxy;
+document.all.textfield22.value=wii.proxyPort;
+data=wii.profileID+1;
+document.all.BnrName.innerHTML = "Connection "+data;
+data=wii.autoBasic;
+if(data == 0)
+{
+	document.getElementById("mySet").style.backgroundImage = "url(../../../COMMON/BTN/Btn_List_M_Dark.gif)";
+	document.all("List02").style.visibility="hidden";
+}
+else
+{
+	document.getElementById("mySet").style.backgroundImage = "url(../../../COMMON/BTN/Btn_List_M02.gif)";
+	document.all("List02").style.visibility="visible";
+}
+_moveCheckImageExe(2,data);
+
+</script>
+</body>
+</html>

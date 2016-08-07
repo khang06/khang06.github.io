@@ -1,0 +1,249 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>index01</title>
+<link href="../../style_sheet/Title_name.css" rel="stylesheet" type="text/css" />
+<link href="../../style_sheet/List.css" rel="stylesheet" type="text/css" />
+<style type="text/css">
+<!--
+@import url("../../style_sheet/Under.css");
+body {
+	background-repeat: repeat-x;
+	margin: 0px 0px 0px 0px;
+	background-image: url(../../COMMON/BG/BG_common.gif);
+}
+a:link {
+	text-decoration: none;
+}
+a:visited {
+	text-decoration: none;
+}
+a:hover {
+	text-decoration: none;
+}
+a:active {
+	text-decoration: none;
+}
+#List01 {
+	position:absolute;
+	left:104px;
+	top:78px;
+	width:395px;
+	height:60px;
+}
+#List02 {
+	position:absolute;
+	left:104px;
+	top:150px;
+	width:400px;
+	height:60px;
+}
+#List03 {
+	position:absolute;
+	left:104px;
+	top:222px;
+	width:400px;
+	height:60px;
+}
+#Rbtn {
+	position:absolute;
+	left:514px;
+	top:180px;
+	width:72;
+	height:72;
+}
+#UnderL {
+	position:absolute;
+	left:28px;
+	top:371px;
+	width:272px;
+	height:72px;
+}
+#BnrWhite {
+	position:absolute;
+	left:24px;
+	top:27px;
+	width:408px;
+	height:36px;
+	background-image: url(../../COMMON/BG/Tab_White_L.gif);
+	background-repeat: no-repeat;
+}
+#BnrName {
+	position:absolute;
+	left:8px;
+	top:0px;
+	width:384px;
+	height:36px;
+}
+#ListIcon02 {
+	position:absolute;
+	left:140px;
+	top:304px;
+	width:44px;
+	height:40px;
+}
+#ListIcon03 {
+	position:absolute;
+	left:138px;
+	top:232px;
+	width:48px;
+	height:38px;
+	z-index:4;
+}
+#List04 {
+	position:absolute;
+	left:104px;
+	top:294px;
+	width:400px;
+	height:60px;
+	z-index:9;
+}
+#Page01Icon {
+	position:absolute;
+	left:536px;
+	top:376px;
+	width:40px;
+	height:32px;
+	background-image: url(../../COMMON/List_Icon/Icon_Index_Page_off.gif);
+}
+#Page02Icon {
+	position:absolute;
+	left:488px;
+	top:376px;
+	width:40px;
+	height:32px;
+	background-image: url(../../COMMON/List_Icon/Icon_Index_Page_off.gif);
+}
+#Page03Icon {
+	position:absolute;
+	left:440px;
+	top:376px;
+	width:40px;
+	height:32px;
+	background-image: url(../../COMMON/List_Icon/Icon_Index_Page_on.gif);
+}
+-->
+</style>
+<script type="text/JavaScript">
+<!--
+// ---------- グローバルオブジェクト ---------- 
+//ここでCコードのglobalGetterが呼ばれる。(name = wiiObject)
+var wii = new wiiSetting();
+var tra = new wiiTrasition();
+
+function MM_swapImgRestore() { //v3.0
+  var i,x,a=document.MM_sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) x.src=x.oSrc;
+}
+
+function MM_preloadImages() { //v3.0
+  var d=document; if(d.images){ if(!d.MM_p) d.MM_p=new Array();
+    var i,j=d.MM_p.length,a=MM_preloadImages.arguments; for(i=0; i<a.length; i++)
+    if (a[i].indexOf("#")!=0){ d.MM_p[j]=new Image; d.MM_p[j++].src=a[i];}}
+}
+
+function MM_findObj(n, d) { //v4.01
+  var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
+    d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
+  if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
+  for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document);
+  if(!x && d.getElementById) x=d.getElementById(n); return x;
+}
+
+function MM_swapImage() { //v3.0
+  var i,j=0,x,a=MM_swapImage.arguments; document.MM_sr=new Array; for(i=0;i<(a.length-2);i+=3)
+   if ((x=MM_findObj(a[i]))!=null){document.MM_sr[j++]=x; if(!x.oSrc) x.oSrc=x.src; x.src=a[i+2];}
+	wii.se = 2;
+}
+
+function setSE()
+{
+	wii.se = 3;
+}
+
+function JSRightScroll()
+{
+	tra.RightScroll();
+	wii.se = 1;
+}
+
+
+function setPageID()
+{
+	wii.pageID = 2;
+	wii.se = 3;
+}
+
+function setFinish()
+{
+	wii.finish = 1;
+	wii.se = 4;
+}
+//-->
+</script>
+<link href="../../style_sheet/page_index.css" rel="stylesheet" type="text/css" />
+
+<body onload="MM_preloadImages('../../COMMON/BG/BG_common.gif','../../COMMON/BG/Tab_White_L.gif','../../COMMON/BTN/Allow_R_off.gif','../../COMMON/BTN/Allow_R_on.gif','../../COMMON/BTN/Btn_List03.gif','../../COMMON/BTN/List03_off.png','../../COMMON/BTN/List03_on.png','../../COMMON/BTN/Under.gif','../../COMMON/BTN/Under_off.png','../../COMMON/BTN/Under_on.png','../../COMMON/List_Icon/Icon_Index_Page_off.gif','../../COMMON/List_Icon/Icon_Index_Page_on.gif')">
+<div id="List01"><a href="Nickname/Nickname_set.html" onclick="setPageID()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image8','','../../COMMON/BTN/List03_on.png',1)"><img src="../../COMMON/BTN/List03_off.png" name="Image8" width="400" height="60" border="0" id="Image8" /></a></div>
+<div id="List02"><a href="Calendar/Calendar_index.html" onclick="setSE()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image81','','../../COMMON/BTN/List03_on.png',1)"><img src="../../COMMON/BTN/List03_off.png" name="Image81" width="400" height="60" border="0" id="Image81" /></a></div>
+<div id="List03"><a href="Display/Display_index.html" onclick="setSE()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image82','','../../COMMON/BTN/List03_on.png',1)"><img src="../../COMMON/BTN/List03_off.png" name="Image82" width="400" height="60" border="0" id="Image82" /></a></div>
+<div id="Rbtn"></a><a href="index02.html" onclick="JSRightScroll()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image14','','../../COMMON/BTN/Allow_R_on.gif',1)"><img src="../../COMMON/BTN/Allow_R_off.gif" name="Image14" width="72" height="72" border="0" id="Image14" /></a></div>
+<div id="UnderL"><a href="javaScript:void(0)" onclick="setFinish()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image6','','../../COMMON/BTN/Under_on.png',1)"><img src="../../COMMON/BTN/Under_off.png" name="Image6" width="272" height="72" border="0" id="Image6" /></a></div>
+<div id="BnrWhite">
+  <div class="Title_name" id="BnrName">Wii System Settings 1</div>
+</div>
+<div id="List04"><a href="Sound/Sound_index.html" onclick="setSE()" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image83','','../../COMMON/BTN/List03_on.png',1)"><img src="../../COMMON/BTN/List03_off.png" name="Image83" width="400" height="60" border="0" id="Image83" /></a></div>
+<div class="List" id="Page01Icon">
+  <div align="center">3</div>
+</div>
+<div class="List" id="Page02Icon">
+  <div align="center">2</div>
+</div>
+<div class="List" id="Page03Icon">
+  <div align="center">1</div>
+</div>
+<table width="607" height="72" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th width="24" height="72" align="right" valign="bottom" scope="col">&nbsp;</th>
+    <td width="560" height="72" class="Title_name" scope="col">&nbsp;</td>
+    <th width="23" height="72" align="right" valign="bottom" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th width="24" height="72" scope="col">&nbsp;</th>
+    <th width="560" height="72" background="../../COMMON/BTN/Btn_List03.gif" class="List" scope="col">Console Nickname</th>
+    <th width="23" height="72" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th width="24" height="72" scope="col">&nbsp;</th>
+    <th width="560" height="72" background="../../COMMON/BTN/Btn_List03.gif" class="List" scope="col">Calendar</th>
+    <th width="23" height="72" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th width="24" height="72" scope="col">&nbsp;</th>
+    <th width="560" height="72" background="../../COMMON/BTN/Btn_List03.gif" class="List" scope="col">Screen</th>
+    <th width="23" height="72" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th width="24" height="72" scope="col">&nbsp;</th>
+    <th width="560" height="72" background="../../COMMON/BTN/Btn_List03.gif" class="List" scope="col">Sound</th>
+    <th width="23" height="72" scope="col">&nbsp;</th>
+  </tr>
+</table>
+<table width="607" height="95" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th width="24" scope="col">&nbsp;</th>
+    <th width="280" background="../../COMMON/BTN/Under.gif" class="Under" scope="col">Back</th>
+    <th width="280" align="right" valign="top" class="page_index" scope="col">&nbsp;</th>
+    <th width="23" scope="col">&nbsp;</th>
+  </tr>
+</table>
+</body>
+</html>
