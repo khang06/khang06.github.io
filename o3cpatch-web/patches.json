@@ -6,6 +6,11 @@
             "name": "Show first screen layer in menus",
             "type": "checkbox",
             "value": true
+        },
+        "disable_boot_screen": {
+            "name": "Disable boot screen",
+            "type": "checkbox",
+            "value": false
         }
     },
     "patches": {
@@ -49,7 +54,8 @@
         },
         "Disable boot screen": {
             "addr": "screen_layer_update_boot_screen",
-            "data": "!nop"
+            "data": "!nop",
+            "enable_if": "disable_boot_screen"
         },
         "Main patch binary": {
             "addr": "custom_flash_base",
