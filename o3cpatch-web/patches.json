@@ -1,0 +1,59 @@
+{
+    "target_fw_str": "v1.4 beta",
+    "target_fw": 20240511,
+    "options": {
+        "transparent_menu": {
+            "name": "Show first screen layer in menus",
+            "type": "checkbox",
+            "value": true
+        }
+    },
+    "patches": {
+        "Stub MD5 size": {
+            "addr": "0x2DF84",
+            "data": "00000000"
+        },
+        "Stub MD5 hash": {
+            "addr": "0x2DFA0",
+            "data": "D41D8CD98F00B204E9800998ECF8427E"
+        },
+        "Hook reset vector": {
+            "addr": "0x4000",
+            "data": "!j:handle_reset_custom"
+        },
+        "Custom device info": {
+            "addr": "menu_device_info",
+            "data": "!j:menu_device_info_custom"
+        },
+        "Custom USB commands": {
+            "addr": "handle_usb_cmd_2_hook",
+            "data": "!j:get_analog_key"
+        },
+        "Custom widgets": {
+            "addr": "screen_layer_update_hook",
+            "data": "!j:screen_layer_update_custom" 
+        },
+        "Render first screen layer in menus": {
+            "addr": "screen_layer_update_menu_hook",
+            "data": "!j:screen_layer_update_menu_custom",
+            "enable_if": "transparent_menu"
+        },
+        "Don't clear the screen in menus": {
+            "addr": "menu_tick_fb_clear",
+            "data": "!nop",
+            "enable_if": "transparent_menu"
+        },
+        "Hook per-millisecond callback" :{
+            "addr": "ms_callback_hook",
+            "data": "!jal_ra:ms_callback_custom"
+        },
+        "Disable boot screen": {
+            "addr": "screen_layer_update_boot_screen",
+            "data": "!nop"
+        },
+        "Main patch binary": {
+            "addr": "custom_flash_base",
+            "data": "!main"
+        }
+    }
+}

@@ -1,0 +1,122 @@
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+FLASH            0x000000000002a000 0x0000000000003f00
+RAM              0x0000000020013500 0x0000000000004000
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+                0x000000000134d87f                target_fw = 0x134d87f
+                0x000000000002a000                custom_flash_base = 0x2a000
+                0x0000000020013500                custom_ram_base = 0x20013500
+                0x0000000000004f60                handle_reset_orig = 0x4f60
+                0x000000000000a0be                handle_usb_cmd_2_hook = 0xa0be
+                0x0000000000009ce0                handle_usb_cmd_2_fail = 0x9ce0
+                0x0000000000009cb8                handle_usb_cmd_2_ret = 0x9cb8
+                0x0000000020000490                g_key_single_count = 0x20000490
+                0x000000002000ea40                g_key_analog = 0x2000ea40
+                0x0000000020012d4c                g_key_color_state = 0x20012d4c
+                0x000000002000da38                g_key_pressed = 0x2000da38
+                0x0000000020000410                g_menu_secs = 0x20000410
+                0x0000000020000414                g_menu_ms = 0x20000414
+                0x0000000020012a6c                g_menu_items = 0x20012a6c
+                0x0000000020012c2c                g_menu_item_count = 0x20012c2c
+                0x00000000000066fc                screen_layer_update_menu_hook = 0x66fc
+                0x000000000000671a                screen_layer_update_no_menu = 0x671a
+                0x0000000000006a9c                screen_layer_update_hook = 0x6a9c
+                0x0000000000006700                screen_layer_update_ret = 0x6700
+                0x00000000000067d6                screen_layer_update_boot_screen = 0x67d6
+                0x0000000000008d8a                menu_tick = 0x8d8a
+                0x0000000000008d96                menu_tick_fb_clear = 0x8d96
+                0x00000000000079e4                menu_device = 0x79e4
+                0x000000000000789c                menu_device_info = 0x789c
+                0x000000000000d6e0                ms_callback_hook = 0xd6e0
+                0x000000000002979e                ms_callback_orig = 0x2979e
+                0x0000000000005dca                draw_number = 0x5dca
+                0x00000000000059b0                draw_ascii_char = 0x59b0
+
+.text           0x000000000002a000      0xcf8
+                0x000000000002a000                . = ALIGN (0x4)
+ *(.text)
+ .text          0x000000000002a000      0xaf8 C:\Users\Khang\AppData\Local\Temp\ccEM9mNJ.o
+                0x000000000002a000                handle_reset_custom
+                0x000000000002a04e                get_analog_key
+                0x000000000002a092                custom_widget_handler
+                0x000000000002a9e8                ms_callback_custom
+                0x000000000002aa80                screen_layer_update_custom
+                0x000000000002aa94                screen_layer_update_menu_custom
+                0x000000000002aaae                menu_device_info_custom
+ *(.text.*)
+ *(.rodata)
+ *fill*         0x000000000002aaf8        0x0 
+ .rodata        0x000000000002aaf8      0x102 C:\Users\Khang\AppData\Local\Temp\ccEM9mNJ.o
+ *(.rodata*)
+ *fill*         0x000000000002abfa        0x2 
+ .rodata.str4.4
+                0x000000000002abfc       0xfc C:\Users\Khang\AppData\Local\Temp\ccEM9mNJ.o
+ *(.gnu.linkonce.t.*)
+                0x000000000002acf8                . = ALIGN (0x4)
+
+.rela.dyn       0x000000000002acf8        0x0
+ .rela.text     0x000000000002acf8        0x0 C:\Users\Khang\AppData\Local\Temp\ccEM9mNJ.o
+
+.dalign         0x0000000020013500        0x0 load address 0x000000000002acf8
+                0x0000000020013500                . = ALIGN (0x4)
+                0x0000000020013500                PROVIDE (_data_vma = .)
+
+.dlalign        0x000000000002acf8        0x0
+                0x000000000002acf8                . = ALIGN (0x4)
+                0x000000000002acf8                PROVIDE (_data_lma = .)
+
+.data           0x0000000020013500       0x10 load address 0x000000000002acf8
+ *(.gnu.linkonce.r.*)
+ *(.data .data.*)
+ .data          0x0000000020013500        0xb C:\Users\Khang\AppData\Local\Temp\ccEM9mNJ.o
+ *(.gnu.linkonce.d.*)
+                0x0000000020013510                . = ALIGN (0x8)
+ *fill*         0x000000002001350b        0x5 
+                [!provide]                        PROVIDE (__global_pointer$ = (. + 0x800))
+ *(.sdata .sdata.*)
+ *(.sdata2.*)
+ *(.gnu.linkonce.s.*)
+                0x0000000020013510                . = ALIGN (0x8)
+ *(.srodata.cst16)
+ *(.srodata.cst8)
+ *(.srodata.cst4)
+ *(.srodata.cst2)
+ *(.srodata .srodata.*)
+                0x0000000020013510                . = ALIGN (0x4)
+                0x0000000020013510                PROVIDE (_edata = .)
+
+.bss            0x0000000020013510      0x3fc load address 0x000000000002ad08
+                0x0000000020013510                . = ALIGN (0x4)
+                0x0000000020013510                PROVIDE (_sbss = .)
+ *(.sbss*)
+ .sbss          0x0000000020013510        0x6 C:\Users\Khang\AppData\Local\Temp\ccEM9mNJ.o
+ *(.gnu.linkonce.sb.*)
+ *(.bss*)
+ *fill*         0x0000000020013516        0x2 
+ .bss           0x0000000020013518      0x3f4 C:\Users\Khang\AppData\Local\Temp\ccEM9mNJ.o
+ *(.gnu.linkonce.b.*)
+ *(COMMON*)
+                0x000000002001390c                . = ALIGN (0x4)
+                0x000000002001390c                PROVIDE (_ebss = .)
+LOAD C:\Users\Khang\AppData\Local\Temp\ccEM9mNJ.o
+LOAD c:/mounriver/mrs_community/toolchain/risc-v embedded gcc12/bin/../lib/gcc/riscv-none-elf/12.2.0/rv32imafc_xw/ilp32f\libgcc.a
+START GROUP
+LOAD c:/mounriver/mrs_community/toolchain/risc-v embedded gcc12/bin/../lib/gcc/riscv-none-elf/12.2.0/../../../../riscv-none-elf/lib/rv32imafc_xw/ilp32f\libc.a
+LOAD c:/mounriver/mrs_community/toolchain/risc-v embedded gcc12/bin/../lib/gcc/riscv-none-elf/12.2.0/../../../../riscv-none-elf/lib/rv32imafc_xw/ilp32f\libgloss.a
+END GROUP
+LOAD c:/mounriver/mrs_community/toolchain/risc-v embedded gcc12/bin/../lib/gcc/riscv-none-elf/12.2.0/rv32imafc_xw/ilp32f\libgcc.a
+OUTPUT(main.o elf32-littleriscv)
+
+.comment        0x0000000000000000       0x31
+ .comment       0x0000000000000000       0x31 C:\Users\Khang\AppData\Local\Temp\ccEM9mNJ.o
+                                         0x32 (size before relaxing)
+
+.riscv.attributes
+                0x0000000000000000       0x36
+ .riscv.attributes
+                0x0000000000000000       0x36 C:\Users\Khang\AppData\Local\Temp\ccEM9mNJ.o
