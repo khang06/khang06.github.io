@@ -15,7 +15,7 @@ function log(string) {
 }
 
 async function fetchWrapped(url) {
-    let req = await fetch(url);
+    let req = await fetch(url + `?${Date.now()}`);
     if (req.status !== 200)
         throw new Error(`Server returned "${fwFetch.statusText}"`);
     return req;

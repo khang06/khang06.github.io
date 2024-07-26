@@ -2,108 +2,106 @@
 Memory Configuration
 
 Name             Origin             Length             Attributes
-FLASH            0x000000000002a000 0x0000000000003f00
-RAM              0x0000000020013500 0x0000000000004000
+FLASH            0x000000000002b000 0x0000000000002f00
+RAM              0x0000000020013600 0x0000000000004000
 *default*        0x0000000000000000 0xffffffffffffffff
 
 Linker script and memory map
 
-                0x000000000134d87f                target_fw = 0x134d87f
-                0x000000000002a000                custom_flash_base = 0x2a000
-                0x0000000020013500                custom_ram_base = 0x20013500
-                0x0000000000004f60                handle_reset_orig = 0x4f60
-                0x000000000000a0be                handle_usb_cmd_2_hook = 0xa0be
-                0x0000000000009ce0                handle_usb_cmd_2_fail = 0x9ce0
-                0x0000000000009cb8                handle_usb_cmd_2_ret = 0x9cb8
-                0x0000000020000490                g_key_single_count = 0x20000490
-                0x000000002000ea40                g_key_analog = 0x2000ea40
-                0x0000000020012d4c                g_key_color_state = 0x20012d4c
-                0x000000002000da38                g_key_pressed = 0x2000da38
-                0x0000000020000410                g_menu_secs = 0x20000410
-                0x0000000020000414                g_menu_ms = 0x20000414
-                0x0000000020012a6c                g_menu_items = 0x20012a6c
-                0x0000000020012c2c                g_menu_item_count = 0x20012c2c
-                0x00000000000066fc                screen_layer_update_menu_hook = 0x66fc
-                0x000000000000671a                screen_layer_update_no_menu = 0x671a
-                0x0000000000006a9c                screen_layer_update_hook = 0x6a9c
-                0x0000000000006700                screen_layer_update_ret = 0x6700
-                0x00000000000067d6                screen_layer_update_boot_screen = 0x67d6
-                0x0000000000008d8a                menu_tick = 0x8d8a
-                0x0000000000008d96                menu_tick_fb_clear = 0x8d96
-                0x00000000000079e4                menu_device = 0x79e4
-                0x000000000000789c                menu_device_info = 0x789c
-                0x000000000000d6e0                ms_callback_hook = 0xd6e0
-                0x000000000002979e                ms_callback_orig = 0x2979e
-                0x0000000000005dca                draw_number = 0x5dca
-                0x00000000000059b0                draw_ascii_char = 0x59b0
+                0x000000000134d945                target_fw = 0x134d945
+                0x000000000002b000                custom_flash_base = 0x2b000
+                0x0000000020013600                custom_ram_base = 0x20013600
+                0x0000000000005042                handle_reset_orig = 0x5042
+                0x000000000000a334                handle_usb_cmd_2_hook = 0xa334
+                0x0000000000009f56                handle_usb_cmd_2_fail = 0x9f56
+                0x0000000000009f2e                handle_usb_cmd_2_ret = 0x9f2e
+                0x00000000200004e4                g_key_single_count = 0x200004e4
+                0x000000002000e9b8                g_key_analog = 0x2000e9b8
+                0x0000000020012db8                g_key_color_state = 0x20012db8
+                0x000000002000d9b0                g_key_pressed = 0x2000d9b0
+                0x0000000020012be0                g_menu_items = 0x20012be0
+                0x0000000020012da0                g_menu_item_count = 0x20012da0
+                0x000000000000678a                screen_layer_update_menu_hook = 0x678a
+                0x00000000000067a8                screen_layer_update_no_menu = 0x67a8
+                0x0000000000006c2e                screen_layer_update_hook = 0x6c2e
+                0x000000000000678e                screen_layer_update_ret = 0x678e
+                0x0000000000006858                screen_layer_update_boot_screen = 0x6858
+                0x0000000000008fa6                menu_tick = 0x8fa6
+                0x0000000000008fb2                menu_tick_fb_clear = 0x8fb2
+                0x0000000000007b08                menu_device = 0x7b08
+                0x000000000000799c                menu_device_info = 0x799c
+                0x000000000000db8a                ms_callback_hook = 0xdb8a
+                0x000000000002a9f6                ms_callback_orig = 0x2a9f6
+                0x0000000000005eac                draw_number = 0x5eac
+                0x0000000000005a92                draw_ascii_char = 0x5a92
 
-.text           0x000000000002a000      0xcf8
-                0x000000000002a000                . = ALIGN (0x4)
+.text           0x000000000002b000      0xcf8
+                0x000000000002b000                . = ALIGN (0x4)
  *(.text)
- .text          0x000000000002a000      0xaf8 C:\Users\Khang\AppData\Local\Temp\ccEM9mNJ.o
-                0x000000000002a000                handle_reset_custom
-                0x000000000002a04e                get_analog_key
-                0x000000000002a092                custom_widget_handler
-                0x000000000002a9e8                ms_callback_custom
-                0x000000000002aa80                screen_layer_update_custom
-                0x000000000002aa94                screen_layer_update_menu_custom
-                0x000000000002aaae                menu_device_info_custom
+ .text          0x000000000002b000      0xaf8 C:\Users\Khang\AppData\Local\Temp\ccKDapg5.o
+                0x000000000002b000                handle_reset_custom
+                0x000000000002b04e                get_analog_key
+                0x000000000002b092                custom_widget_handler
+                0x000000000002b9e8                ms_callback_custom
+                0x000000000002ba80                screen_layer_update_custom
+                0x000000000002ba94                screen_layer_update_menu_custom
+                0x000000000002baae                menu_device_info_custom
  *(.text.*)
  *(.rodata)
- *fill*         0x000000000002aaf8        0x0 
- .rodata        0x000000000002aaf8      0x102 C:\Users\Khang\AppData\Local\Temp\ccEM9mNJ.o
+ *fill*         0x000000000002baf8        0x0 
+ .rodata        0x000000000002baf8      0x102 C:\Users\Khang\AppData\Local\Temp\ccKDapg5.o
  *(.rodata*)
- *fill*         0x000000000002abfa        0x2 
+ *fill*         0x000000000002bbfa        0x2 
  .rodata.str4.4
-                0x000000000002abfc       0xfc C:\Users\Khang\AppData\Local\Temp\ccEM9mNJ.o
+                0x000000000002bbfc       0xfc C:\Users\Khang\AppData\Local\Temp\ccKDapg5.o
  *(.gnu.linkonce.t.*)
-                0x000000000002acf8                . = ALIGN (0x4)
+                0x000000000002bcf8                . = ALIGN (0x4)
 
-.rela.dyn       0x000000000002acf8        0x0
- .rela.text     0x000000000002acf8        0x0 C:\Users\Khang\AppData\Local\Temp\ccEM9mNJ.o
+.rela.dyn       0x000000000002bcf8        0x0
+ .rela.text     0x000000000002bcf8        0x0 C:\Users\Khang\AppData\Local\Temp\ccKDapg5.o
 
-.dalign         0x0000000020013500        0x0 load address 0x000000000002acf8
-                0x0000000020013500                . = ALIGN (0x4)
-                0x0000000020013500                PROVIDE (_data_vma = .)
+.dalign         0x0000000020013600        0x0 load address 0x000000000002bcf8
+                0x0000000020013600                . = ALIGN (0x4)
+                0x0000000020013600                PROVIDE (_data_vma = .)
 
-.dlalign        0x000000000002acf8        0x0
-                0x000000000002acf8                . = ALIGN (0x4)
-                0x000000000002acf8                PROVIDE (_data_lma = .)
+.dlalign        0x000000000002bcf8        0x0
+                0x000000000002bcf8                . = ALIGN (0x4)
+                0x000000000002bcf8                PROVIDE (_data_lma = .)
 
-.data           0x0000000020013500       0x10 load address 0x000000000002acf8
+.data           0x0000000020013600       0x10 load address 0x000000000002bcf8
  *(.gnu.linkonce.r.*)
  *(.data .data.*)
- .data          0x0000000020013500        0xb C:\Users\Khang\AppData\Local\Temp\ccEM9mNJ.o
+ .data          0x0000000020013600        0xb C:\Users\Khang\AppData\Local\Temp\ccKDapg5.o
  *(.gnu.linkonce.d.*)
-                0x0000000020013510                . = ALIGN (0x8)
- *fill*         0x000000002001350b        0x5 
+                0x0000000020013610                . = ALIGN (0x8)
+ *fill*         0x000000002001360b        0x5 
                 [!provide]                        PROVIDE (__global_pointer$ = (. + 0x800))
  *(.sdata .sdata.*)
  *(.sdata2.*)
  *(.gnu.linkonce.s.*)
-                0x0000000020013510                . = ALIGN (0x8)
+                0x0000000020013610                . = ALIGN (0x8)
  *(.srodata.cst16)
  *(.srodata.cst8)
  *(.srodata.cst4)
  *(.srodata.cst2)
  *(.srodata .srodata.*)
-                0x0000000020013510                . = ALIGN (0x4)
-                0x0000000020013510                PROVIDE (_edata = .)
+                0x0000000020013610                . = ALIGN (0x4)
+                0x0000000020013610                PROVIDE (_edata = .)
 
-.bss            0x0000000020013510      0x3fc load address 0x000000000002ad08
-                0x0000000020013510                . = ALIGN (0x4)
-                0x0000000020013510                PROVIDE (_sbss = .)
+.bss            0x0000000020013610      0x3fc load address 0x000000000002bd08
+                0x0000000020013610                . = ALIGN (0x4)
+                0x0000000020013610                PROVIDE (_sbss = .)
  *(.sbss*)
- .sbss          0x0000000020013510        0x6 C:\Users\Khang\AppData\Local\Temp\ccEM9mNJ.o
+ .sbss          0x0000000020013610        0x6 C:\Users\Khang\AppData\Local\Temp\ccKDapg5.o
  *(.gnu.linkonce.sb.*)
  *(.bss*)
- *fill*         0x0000000020013516        0x2 
- .bss           0x0000000020013518      0x3f4 C:\Users\Khang\AppData\Local\Temp\ccEM9mNJ.o
+ *fill*         0x0000000020013616        0x2 
+ .bss           0x0000000020013618      0x3f4 C:\Users\Khang\AppData\Local\Temp\ccKDapg5.o
  *(.gnu.linkonce.b.*)
  *(COMMON*)
-                0x000000002001390c                . = ALIGN (0x4)
-                0x000000002001390c                PROVIDE (_ebss = .)
-LOAD C:\Users\Khang\AppData\Local\Temp\ccEM9mNJ.o
+                0x0000000020013a0c                . = ALIGN (0x4)
+                0x0000000020013a0c                PROVIDE (_ebss = .)
+LOAD C:\Users\Khang\AppData\Local\Temp\ccKDapg5.o
 LOAD c:/mounriver/mrs_community/toolchain/risc-v embedded gcc12/bin/../lib/gcc/riscv-none-elf/12.2.0/rv32imafc_xw/ilp32f\libgcc.a
 START GROUP
 LOAD c:/mounriver/mrs_community/toolchain/risc-v embedded gcc12/bin/../lib/gcc/riscv-none-elf/12.2.0/../../../../riscv-none-elf/lib/rv32imafc_xw/ilp32f\libc.a
@@ -113,10 +111,10 @@ LOAD c:/mounriver/mrs_community/toolchain/risc-v embedded gcc12/bin/../lib/gcc/r
 OUTPUT(main.o elf32-littleriscv)
 
 .comment        0x0000000000000000       0x31
- .comment       0x0000000000000000       0x31 C:\Users\Khang\AppData\Local\Temp\ccEM9mNJ.o
+ .comment       0x0000000000000000       0x31 C:\Users\Khang\AppData\Local\Temp\ccKDapg5.o
                                          0x32 (size before relaxing)
 
 .riscv.attributes
                 0x0000000000000000       0x36
  .riscv.attributes
-                0x0000000000000000       0x36 C:\Users\Khang\AppData\Local\Temp\ccEM9mNJ.o
+                0x0000000000000000       0x36 C:\Users\Khang\AppData\Local\Temp\ccKDapg5.o

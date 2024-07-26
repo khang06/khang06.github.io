@@ -1,6 +1,6 @@
 {
-    "target_fw_str": "v1.4 beta",
-    "target_fw": 20240511,
+    "target_fw_str": "v1.5",
+    "target_fw": 20240709,
     "options": {
         "transparent_menu": {
             "name": "Show first screen layer in menus",
