@@ -39,4 +39,8 @@ button {
 #footer {
     position: absolute;
     bottom: 0;
-} 
+}
+
+canvas {
+    margin: 5px 5px 0px 0px;
+}

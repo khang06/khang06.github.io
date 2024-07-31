@@ -8,6 +8,7 @@ var baseFw = null;
 var patchConfig = null;
 var patchBin = null;
 var patchMap = {};
+var patchFont = null;
 
 function log(string) {
     logElement.innerText += string + "\n"
@@ -69,6 +70,10 @@ function resolve_data(addr, data) {
                 return encode_u32le(0x13);
             case "!main":
                 return patchBin;
+            case "!ptr":
+                return encode_u32le(resolve_addr(split[1]));
+            case "!font":
+                return patchFont;
             default:
                 throw new Error(`Failed to resolve data ${data}`);
         }
@@ -130,6 +135,54 @@ async function init() {
                     optionsElement.appendChild(label);
                     break;
                 }
+                case "font_dropdown": {
+                    let dropdown = document.createElement("select");
+                    data["dropdown"] = dropdown;
+
+                    for (const [id, data] of Object.entries(patchConfig["fonts"])) {
+                        let option = document.createElement("option");
+                        option.value = id;
+                        option.innerText = id;
+                        dropdown.appendChild(option);
+                    }
+
+                    const scale = 2;
+                    let canvas = document.createElement("canvas");
+                    canvas.width = 16 * 8 * scale;
+                    canvas.height = 6 * 16 * scale;
+
+                    dropdown.addEventListener("change", () => {
+                        patchFont = resolve_data(0, patchConfig["fonts"][dropdown.value]["data"]);
+
+                        let ctx = canvas.getContext("2d");
+                        ctx.fillStyle = "black";
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                        ctx.fillStyle = "white";
+                        for (var i = 0; i < 94; i++) {
+                            const x_off = i % 16 * 8;
+                            const y_off = Math.floor(i / 16) * 16;
+                            for (var row = 0; row < 16; row++) {
+                                var byte = patchFont[i * 16 + row];
+                                for (var col = 0; col < 8; col++) {
+                                    if (byte & 1)
+                                        ctx.fillRect((x_off + col) * scale, (y_off + row) * scale, scale, scale);
+                                    byte >>= 1;
+                                }
+                            }
+                        }
+                    });
+                    dropdown.dispatchEvent(new Event("change"));
+
+                    let label = document.createElement("label");
+                    label.innerText = data["name"] + ": ";
+
+                    label.append(dropdown);
+                    optionsElement.appendChild(label);
+                    optionsElement.appendChild(document.createElement("br"));
+                    optionsElement.appendChild(canvas);
+                    break;
+                }
                 default:
                     throw new Error(`Unhandled option type "${data["type"]}"`);
             }
@@ -172,6 +225,10 @@ async function build() {
             switch (data["type"]) {
                 case "checkbox": {
                     data["value"] = data["checkbox"].checked;
+                    break;
+                }
+                case "font_dropdown": {
+                    data["value"] = data["dropdown"].value !== "Stock";
                     break;
                 }
                 default:

@@ -2,16 +2,17 @@
 Memory Configuration
 
 Name             Origin             Length             Attributes
-FLASH            0x000000000002b000 0x0000000000002f00
-RAM              0x0000000020013600 0x0000000000004000
+FLASH            0x000000000002aea8 0x00000000000030d8
+RAM              0x00000000200134e8 0x000000000000c318
 *default*        0x0000000000000000 0xffffffffffffffff
 
 Linker script and memory map
 
                 0x000000000134d945                target_fw = 0x134d945
-                0x000000000002b000                custom_flash_base = 0x2b000
-                0x0000000020013600                custom_ram_base = 0x20013600
+                0x000000000002aea8                custom_flash_base = 0x2aea8
+                0x00000000200134e8                custom_ram_base = 0x200134e8
                 0x0000000000005042                handle_reset_orig = 0x5042
+                0x000000000002ae10                curbrk_init = 0x2ae10
                 0x000000000000a334                handle_usb_cmd_2_hook = 0xa334
                 0x0000000000009f56                handle_usb_cmd_2_fail = 0x9f56
                 0x0000000000009f2e                handle_usb_cmd_2_ret = 0x9f2e
@@ -34,74 +35,76 @@ Linker script and memory map
                 0x000000000002a9f6                ms_callback_orig = 0x2a9f6
                 0x0000000000005eac                draw_number = 0x5eac
                 0x0000000000005a92                draw_ascii_char = 0x5a92
+                0x0000000000019b58                g_font = 0x19b58
+                0x00000000200138f4                _end = _ebss
 
-.text           0x000000000002b000      0xcf8
-                0x000000000002b000                . = ALIGN (0x4)
+.text           0x000000000002aea8      0xcf8
+                0x000000000002aea8                . = ALIGN (0x4)
  *(.text)
- .text          0x000000000002b000      0xaf8 C:\Users\Khang\AppData\Local\Temp\ccKDapg5.o
-                0x000000000002b000                handle_reset_custom
-                0x000000000002b04e                get_analog_key
-                0x000000000002b092                custom_widget_handler
-                0x000000000002b9e8                ms_callback_custom
-                0x000000000002ba80                screen_layer_update_custom
-                0x000000000002ba94                screen_layer_update_menu_custom
-                0x000000000002baae                menu_device_info_custom
+ .text          0x000000000002aea8      0xaf8 C:\Users\Khang\AppData\Local\Temp\ccqk1USr.o
+                0x000000000002aea8                handle_reset_custom
+                0x000000000002aef6                get_analog_key
+                0x000000000002af3a                custom_widget_handler
+                0x000000000002b890                ms_callback_custom
+                0x000000000002b928                screen_layer_update_custom
+                0x000000000002b93c                screen_layer_update_menu_custom
+                0x000000000002b956                menu_device_info_custom
  *(.text.*)
  *(.rodata)
- *fill*         0x000000000002baf8        0x0 
- .rodata        0x000000000002baf8      0x102 C:\Users\Khang\AppData\Local\Temp\ccKDapg5.o
+ *fill*         0x000000000002b9a0        0x0 
+ .rodata        0x000000000002b9a0      0x102 C:\Users\Khang\AppData\Local\Temp\ccqk1USr.o
  *(.rodata*)
- *fill*         0x000000000002bbfa        0x2 
+ *fill*         0x000000000002baa2        0x2 
  .rodata.str4.4
-                0x000000000002bbfc       0xfc C:\Users\Khang\AppData\Local\Temp\ccKDapg5.o
+                0x000000000002baa4       0xfc C:\Users\Khang\AppData\Local\Temp\ccqk1USr.o
  *(.gnu.linkonce.t.*)
-                0x000000000002bcf8                . = ALIGN (0x4)
+                0x000000000002bba0                . = ALIGN (0x4)
 
-.rela.dyn       0x000000000002bcf8        0x0
- .rela.text     0x000000000002bcf8        0x0 C:\Users\Khang\AppData\Local\Temp\ccKDapg5.o
+.rela.dyn       0x000000000002bba0        0x0
+ .rela.text     0x000000000002bba0        0x0 C:\Users\Khang\AppData\Local\Temp\ccqk1USr.o
 
-.dalign         0x0000000020013600        0x0 load address 0x000000000002bcf8
-                0x0000000020013600                . = ALIGN (0x4)
-                0x0000000020013600                PROVIDE (_data_vma = .)
+.dalign         0x00000000200134e8        0x0 load address 0x000000000002bba0
+                0x00000000200134e8                . = ALIGN (0x4)
+                0x00000000200134e8                PROVIDE (_data_vma = .)
 
-.dlalign        0x000000000002bcf8        0x0
-                0x000000000002bcf8                . = ALIGN (0x4)
-                0x000000000002bcf8                PROVIDE (_data_lma = .)
+.dlalign        0x000000000002bba0        0x0
+                0x000000000002bba0                . = ALIGN (0x4)
+                0x000000000002bba0                PROVIDE (_data_lma = .)
 
-.data           0x0000000020013600       0x10 load address 0x000000000002bcf8
+.data           0x00000000200134e8       0x10 load address 0x000000000002bba0
  *(.gnu.linkonce.r.*)
  *(.data .data.*)
- .data          0x0000000020013600        0xb C:\Users\Khang\AppData\Local\Temp\ccKDapg5.o
+ .data          0x00000000200134e8        0xb C:\Users\Khang\AppData\Local\Temp\ccqk1USr.o
  *(.gnu.linkonce.d.*)
-                0x0000000020013610                . = ALIGN (0x8)
- *fill*         0x000000002001360b        0x5 
+                0x00000000200134f8                . = ALIGN (0x8)
+ *fill*         0x00000000200134f3        0x5 
                 [!provide]                        PROVIDE (__global_pointer$ = (. + 0x800))
  *(.sdata .sdata.*)
  *(.sdata2.*)
  *(.gnu.linkonce.s.*)
-                0x0000000020013610                . = ALIGN (0x8)
+                0x00000000200134f8                . = ALIGN (0x8)
  *(.srodata.cst16)
  *(.srodata.cst8)
  *(.srodata.cst4)
  *(.srodata.cst2)
  *(.srodata .srodata.*)
-                0x0000000020013610                . = ALIGN (0x4)
-                0x0000000020013610                PROVIDE (_edata = .)
+                0x00000000200134f8                . = ALIGN (0x4)
+                0x00000000200134f8                PROVIDE (_edata = .)
 
-.bss            0x0000000020013610      0x3fc load address 0x000000000002bd08
-                0x0000000020013610                . = ALIGN (0x4)
-                0x0000000020013610                PROVIDE (_sbss = .)
+.bss            0x00000000200134f8      0x3fc load address 0x000000000002bbb0
+                0x00000000200134f8                . = ALIGN (0x4)
+                0x00000000200134f8                PROVIDE (_sbss = .)
  *(.sbss*)
- .sbss          0x0000000020013610        0x6 C:\Users\Khang\AppData\Local\Temp\ccKDapg5.o
+ .sbss          0x00000000200134f8        0x6 C:\Users\Khang\AppData\Local\Temp\ccqk1USr.o
  *(.gnu.linkonce.sb.*)
  *(.bss*)
- *fill*         0x0000000020013616        0x2 
- .bss           0x0000000020013618      0x3f4 C:\Users\Khang\AppData\Local\Temp\ccKDapg5.o
+ *fill*         0x00000000200134fe        0x2 
+ .bss           0x0000000020013500      0x3f4 C:\Users\Khang\AppData\Local\Temp\ccqk1USr.o
  *(.gnu.linkonce.b.*)
  *(COMMON*)
-                0x0000000020013a0c                . = ALIGN (0x4)
-                0x0000000020013a0c                PROVIDE (_ebss = .)
-LOAD C:\Users\Khang\AppData\Local\Temp\ccKDapg5.o
+                0x00000000200138f4                . = ALIGN (0x4)
+                0x00000000200138f4                PROVIDE (_ebss = .)
+LOAD C:\Users\Khang\AppData\Local\Temp\ccqk1USr.o
 LOAD c:/mounriver/mrs_community/toolchain/risc-v embedded gcc12/bin/../lib/gcc/riscv-none-elf/12.2.0/rv32imafc_xw/ilp32f\libgcc.a
 START GROUP
 LOAD c:/mounriver/mrs_community/toolchain/risc-v embedded gcc12/bin/../lib/gcc/riscv-none-elf/12.2.0/../../../../riscv-none-elf/lib/rv32imafc_xw/ilp32f\libc.a
@@ -111,10 +114,10 @@ LOAD c:/mounriver/mrs_community/toolchain/risc-v embedded gcc12/bin/../lib/gcc/r
 OUTPUT(main.o elf32-littleriscv)
 
 .comment        0x0000000000000000       0x31
- .comment       0x0000000000000000       0x31 C:\Users\Khang\AppData\Local\Temp\ccKDapg5.o
+ .comment       0x0000000000000000       0x31 C:\Users\Khang\AppData\Local\Temp\ccqk1USr.o
                                          0x32 (size before relaxing)
 
 .riscv.attributes
                 0x0000000000000000       0x36
  .riscv.attributes
-                0x0000000000000000       0x36 C:\Users\Khang\AppData\Local\Temp\ccKDapg5.o
+                0x0000000000000000       0x36 C:\Users\Khang\AppData\Local\Temp\ccqk1USr.o
