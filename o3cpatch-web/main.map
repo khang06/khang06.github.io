@@ -2,79 +2,79 @@
 Memory Configuration
 
 Name             Origin             Length             Attributes
-FLASH            0x000000000002aea8 0x00000000000030d8
+FLASH            0x000000000002ae20 0x0000000000003160
 RAM              0x00000000200134e8 0x000000000000c318
 *default*        0x0000000000000000 0xffffffffffffffff
 
 Linker script and memory map
 
-                0x000000000134d945                target_fw = 0x134d945
-                0x000000000002aea8                custom_flash_base = 0x2aea8
+                0x000000000134d9a3                target_fw = 0x134d9a3
+                0x000000000002ae20                custom_flash_base = 0x2ae20
                 0x00000000200134e8                custom_ram_base = 0x200134e8
-                0x0000000000005042                handle_reset_orig = 0x5042
-                0x000000000002ae10                curbrk_init = 0x2ae10
-                0x000000000000a334                handle_usb_cmd_2_hook = 0xa334
-                0x0000000000009f56                handle_usb_cmd_2_fail = 0x9f56
-                0x0000000000009f2e                handle_usb_cmd_2_ret = 0x9f2e
+                0x0000000000005048                handle_reset_orig = 0x5048
+                0x000000000002ad88                curbrk_init = 0x2ad88
+                0x000000000000a41e                handle_usb_cmd_2_hook = 0xa41e
+                0x0000000000009f68                handle_usb_cmd_2_fail = 0x9f68
+                0x0000000000009f40                handle_usb_cmd_2_ret = 0x9f40
                 0x00000000200004e4                g_key_single_count = 0x200004e4
                 0x000000002000e9b8                g_key_analog = 0x2000e9b8
                 0x0000000020012db8                g_key_color_state = 0x20012db8
                 0x000000002000d9b0                g_key_pressed = 0x2000d9b0
                 0x0000000020012be0                g_menu_items = 0x20012be0
                 0x0000000020012da0                g_menu_item_count = 0x20012da0
-                0x000000000000678a                screen_layer_update_menu_hook = 0x678a
-                0x00000000000067a8                screen_layer_update_no_menu = 0x67a8
-                0x0000000000006c2e                screen_layer_update_hook = 0x6c2e
-                0x000000000000678e                screen_layer_update_ret = 0x678e
-                0x0000000000006858                screen_layer_update_boot_screen = 0x6858
-                0x0000000000008fa6                menu_tick = 0x8fa6
-                0x0000000000008fb2                menu_tick_fb_clear = 0x8fb2
-                0x0000000000007b08                menu_device = 0x7b08
-                0x000000000000799c                menu_device_info = 0x799c
-                0x000000000000db8a                ms_callback_hook = 0xdb8a
-                0x000000000002a9f6                ms_callback_orig = 0x2a9f6
-                0x0000000000005eac                draw_number = 0x5eac
-                0x0000000000005a92                draw_ascii_char = 0x5a92
-                0x0000000000019b58                g_font = 0x19b58
+                0x0000000000006798                screen_layer_update_menu_hook = 0x6798
+                0x00000000000067b6                screen_layer_update_no_menu = 0x67b6
+                0x0000000000006c3c                screen_layer_update_hook = 0x6c3c
+                0x000000000000679c                screen_layer_update_ret = 0x679c
+                0x0000000000006866                screen_layer_update_boot_screen = 0x6866
+                0x0000000000008fb8                menu_tick = 0x8fb8
+                0x0000000000008fc4                menu_tick_fb_clear = 0x8fc4
+                0x0000000000007b16                menu_device = 0x7b16
+                0x00000000000079aa                menu_device_info = 0x79aa
+                0x000000000000dbc2                ms_callback_hook = 0xdbc2
+                0x000000000002a96e                ms_callback_orig = 0x2a96e
+                0x0000000000005eb2                draw_number = 0x5eb2
+                0x0000000000005a98                draw_ascii_char = 0x5a98
+                0x0000000000019ad8                g_font = 0x19ad8
                 0x00000000200138f4                _end = _ebss
 
-.text           0x000000000002aea8      0xcf8
-                0x000000000002aea8                . = ALIGN (0x4)
+.text           0x000000000002ae20      0xcf8
+                0x000000000002ae20                . = ALIGN (0x4)
  *(.text)
- .text          0x000000000002aea8      0xaf8 C:\Users\Khang\AppData\Local\Temp\ccqk1USr.o
-                0x000000000002aea8                handle_reset_custom
-                0x000000000002aef6                get_analog_key
-                0x000000000002af3a                custom_widget_handler
-                0x000000000002b890                ms_callback_custom
-                0x000000000002b928                screen_layer_update_custom
-                0x000000000002b93c                screen_layer_update_menu_custom
-                0x000000000002b956                menu_device_info_custom
+ .text          0x000000000002ae20      0xaf8 C:\Users\Khang\AppData\Local\Temp\ccYgBmL8.o
+                0x000000000002ae20                handle_reset_custom
+                0x000000000002ae6e                get_analog_key
+                0x000000000002aeb2                custom_widget_handler
+                0x000000000002b808                ms_callback_custom
+                0x000000000002b8a0                screen_layer_update_custom
+                0x000000000002b8b4                screen_layer_update_menu_custom
+                0x000000000002b8ce                menu_device_info_custom
  *(.text.*)
  *(.rodata)
- *fill*         0x000000000002b9a0        0x0 
- .rodata        0x000000000002b9a0      0x102 C:\Users\Khang\AppData\Local\Temp\ccqk1USr.o
+ *fill*         0x000000000002b918        0x0 
+ .rodata        0x000000000002b918      0x102 C:\Users\Khang\AppData\Local\Temp\ccYgBmL8.o
  *(.rodata*)
- *fill*         0x000000000002baa2        0x2 
+ *fill*         0x000000000002ba1a        0x2 
  .rodata.str4.4
-                0x000000000002baa4       0xfc C:\Users\Khang\AppData\Local\Temp\ccqk1USr.o
+                0x000000000002ba1c       0xfc C:\Users\Khang\AppData\Local\Temp\ccYgBmL8.o
  *(.gnu.linkonce.t.*)
-                0x000000000002bba0                . = ALIGN (0x4)
+                0x000000000002bb18                . = ALIGN (0x4)
 
-.rela.dyn       0x000000000002bba0        0x0
- .rela.text     0x000000000002bba0        0x0 C:\Users\Khang\AppData\Local\Temp\ccqk1USr.o
+.rela.dyn       0x000000000002bb18        0x0
+ .rela.text     0x000000000002bb18        0x0 C:\Users\Khang\AppData\Local\Temp\ccYgBmL8.o
 
-.dalign         0x00000000200134e8        0x0 load address 0x000000000002bba0
+.dalign         0x00000000200134e8        0x0 load address 0x000000000002bb18
                 0x00000000200134e8                . = ALIGN (0x4)
                 0x00000000200134e8                PROVIDE (_data_vma = .)
 
-.dlalign        0x000000000002bba0        0x0
-                0x000000000002bba0                . = ALIGN (0x4)
-                0x000000000002bba0                PROVIDE (_data_lma = .)
+.dlalign        0x000000000002bb18        0x0
+                0x000000000002bb18                . = ALIGN (0x4)
+                0x000000000002bb18                PROVIDE (_data_lma = .)
 
-.data           0x00000000200134e8       0x10 load address 0x000000000002bba0
+.data           0x00000000200134e8       0x10 load address 0x000000000002bb18
  *(.gnu.linkonce.r.*)
  *(.data .data.*)
- .data          0x00000000200134e8        0xb C:\Users\Khang\AppData\Local\Temp\ccqk1USr.o
+ .data          0x00000000200134e8        0xb C:\Users\Khang\AppData\Local\Temp\ccYgBmL8.o
  *(.gnu.linkonce.d.*)
                 0x00000000200134f8                . = ALIGN (0x8)
  *fill*         0x00000000200134f3        0x5 
@@ -91,20 +91,20 @@ Linker script and memory map
                 0x00000000200134f8                . = ALIGN (0x4)
                 0x00000000200134f8                PROVIDE (_edata = .)
 
-.bss            0x00000000200134f8      0x3fc load address 0x000000000002bbb0
+.bss            0x00000000200134f8      0x3fc load address 0x000000000002bb28
                 0x00000000200134f8                . = ALIGN (0x4)
                 0x00000000200134f8                PROVIDE (_sbss = .)
  *(.sbss*)
- .sbss          0x00000000200134f8        0x6 C:\Users\Khang\AppData\Local\Temp\ccqk1USr.o
+ .sbss          0x00000000200134f8        0x6 C:\Users\Khang\AppData\Local\Temp\ccYgBmL8.o
  *(.gnu.linkonce.sb.*)
  *(.bss*)
  *fill*         0x00000000200134fe        0x2 
- .bss           0x0000000020013500      0x3f4 C:\Users\Khang\AppData\Local\Temp\ccqk1USr.o
+ .bss           0x0000000020013500      0x3f4 C:\Users\Khang\AppData\Local\Temp\ccYgBmL8.o
  *(.gnu.linkonce.b.*)
  *(COMMON*)
                 0x00000000200138f4                . = ALIGN (0x4)
                 0x00000000200138f4                PROVIDE (_ebss = .)
-LOAD C:\Users\Khang\AppData\Local\Temp\ccqk1USr.o
+LOAD C:\Users\Khang\AppData\Local\Temp\ccYgBmL8.o
 LOAD c:/mounriver/mrs_community/toolchain/risc-v embedded gcc12/bin/../lib/gcc/riscv-none-elf/12.2.0/rv32imafc_xw/ilp32f\libgcc.a
 START GROUP
 LOAD c:/mounriver/mrs_community/toolchain/risc-v embedded gcc12/bin/../lib/gcc/riscv-none-elf/12.2.0/../../../../riscv-none-elf/lib/rv32imafc_xw/ilp32f\libc.a
@@ -114,10 +114,10 @@ LOAD c:/mounriver/mrs_community/toolchain/risc-v embedded gcc12/bin/../lib/gcc/r
 OUTPUT(main.o elf32-littleriscv)
 
 .comment        0x0000000000000000       0x31
- .comment       0x0000000000000000       0x31 C:\Users\Khang\AppData\Local\Temp\ccqk1USr.o
+ .comment       0x0000000000000000       0x31 C:\Users\Khang\AppData\Local\Temp\ccYgBmL8.o
                                          0x32 (size before relaxing)
 
 .riscv.attributes
                 0x0000000000000000       0x36
  .riscv.attributes
-                0x0000000000000000       0x36 C:\Users\Khang\AppData\Local\Temp\ccqk1USr.o
+                0x0000000000000000       0x36 C:\Users\Khang\AppData\Local\Temp\ccYgBmL8.o
