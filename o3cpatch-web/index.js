@@ -205,7 +205,7 @@ async function init() {
             throw new Error(`Target firmware mismatch (map: ${patchMap["target_fw"]}, patch: ${patchConfig["target_fw"]})`);
 
         log("Ready to build!");
-        document.getElementById("build-button").disabled = false;
+        //document.getElementById("build-button").disabled = false;
     } catch (e) {
         log(`\n${e.stack}`);
     }
